@@ -1,6 +1,8 @@
-from GLC.Artifacts import *
+from Source.Model.GLC.Artifacts.Constants import *
 
-
+'''
+	Classe que representa um simbolo terminal dado por um agrupamento de símbolos.
+'''
 class Vt:
 
 	__simbolos = ""

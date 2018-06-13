@@ -1,7 +1,12 @@
-from GLC.Artifacts import *
+from Source.Model.GLC.Artifacts.Vn import *
+from Source.Model.GLC.Artifacts.Vt import *
+from Source.Model.GLC.Artifacts.Exceptions.ProducaoError import *
 
 
-class Derivacao:
+'''
+	Classe que representa uma producao de uma GLC.
+'''
+class Producao:
 
 	__gerador = None
 	__derivacao = None
@@ -28,7 +33,7 @@ class Derivacao:
 				elif isinstance(simbolo, Vt):
 					self.__terminais.append(simbolo)
 				else:
-					raise(ProducaoError())
+					raise(ProducaoError(": a produção tem que derivar um Vn ou um Vt"))
 
 	def __str__(self):
 		retorno = ""

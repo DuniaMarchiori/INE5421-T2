@@ -1,5 +1,7 @@
 
-
+'''
+	Classe que representa um simbolo não terminal dado por um agrupamento de símbolos.
+'''
 class Vn:
 
 	__simbolos = ""

@@ -1,5 +1,9 @@
 import string
 
+'''
+	Arquivo com algumas constantes úteis para GLC.
+'''
+
 simb_ou = "|"
 simb_derivacao = "->"
 epsilon = "&"
