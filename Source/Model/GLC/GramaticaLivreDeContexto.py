@@ -4,23 +4,25 @@ from Source.Model.GLC.Artifacts.Vn import *
 from Source.Model.GLC.Artifacts.Vt import *
 from Source.Model.GLC.Artifacts.Exceptions.ParsingError import *
 
+from Source.Model.Elemento import *
+
 from collections import OrderedDict
 import re
 
 '''
 	Classe que representa uma gramática livre de contexto.
 '''
-class GramaticaLivreDeContexto:
+class GramaticaLivreDeContexto(Elemento):
 
 	__conjunto_producoes = OrderedDict()
 	__terminais = set()
 	__nao_terminais = set()
 	__vn_inicial = None
 
-	def __init__(self, entrada):
-		self.__parse(entrada)
+	def __init__(self, nome):
+		super(GramaticaLivreDeContexto, self).__init__(TipoElemento.GLC, nome)
 
-	def __parse(self, entrada):
+	def parse(self, entrada):
 		inicial_definido = False
 		entrada_linhas = entrada.splitlines()
 		num_linha = 0
@@ -104,6 +106,9 @@ class GramaticaLivreDeContexto:
 		if vn not in self.__conjunto_producoes:
 			self.__conjunto_producoes[vn] = []
 		self.__conjunto_producoes[vn].append(producao)
+
+	def to_string(self):
+		return self.__str__()
 
 	def __str__(self):
 		retorno = ""
