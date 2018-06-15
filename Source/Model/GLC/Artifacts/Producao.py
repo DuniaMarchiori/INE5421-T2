@@ -23,7 +23,7 @@ class Producao:
 
 		self.__terminais = set()
 		self.__nao_terminais = set()
-		if len(derivacao) == 1 and derivacao[0].eh_epsilon():
+		if isinstance(derivacao[0], Vt) and len(derivacao) == 1 and derivacao[0].eh_epsilon():
 			self.__derivacao_epsilon = True
 		else:
 			self.__derivacao_epsilon = False
