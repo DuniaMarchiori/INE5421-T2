@@ -21,17 +21,17 @@ class Producao:
 		self.__gerador = gerador
 		self.__derivacao = derivacao
 
-		self.__terminais = []
-		self.__nao_terminais = []
+		self.__terminais = set()
+		self.__nao_terminais = set()
 		if len(derivacao) == 1 and derivacao[0].eh_epsilon():
 			self.__derivacao_epsilon = True
 		else:
 			self.__derivacao_epsilon = False
 			for simbolo in derivacao:
 				if isinstance(simbolo, Vn):
-					self.__nao_terminais.append(simbolo)
+					self.__nao_terminais.add(simbolo)
 				elif isinstance(simbolo, Vt):
-					self.__terminais.append(simbolo)
+					self.__terminais.add(simbolo)
 				else:
 					raise(ProducaoError(": a produção tem que derivar um Vn ou um Vt"))
 

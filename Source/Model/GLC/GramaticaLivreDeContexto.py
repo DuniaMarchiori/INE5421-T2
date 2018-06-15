@@ -83,7 +83,7 @@ class GramaticaLivreDeContexto:
 						if simbolo not in alfabeto_terminais:
 							raise ParsingError(": símbolo inesperado na sintaxe de um terminal na linha " + str(linha))
 					elif tipo == 2:
-						raise ParsingError(": símbolo inesperado após o & na linha " + str(linha))
+						raise ParsingError(": símbolo inesperado após o símbolo & na linha " + str(linha))
 
 				if tipo == 0:
 					vn = Vn(unidade)
