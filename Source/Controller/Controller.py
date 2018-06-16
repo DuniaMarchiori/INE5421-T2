@@ -4,6 +4,7 @@ from Source.Model.Model import Model
 from Source.View.View import View
 
 from Source.Model.GLC.Artifacts.Exceptions.ParsingError import *
+from Source.Model.Exceptions.OperacaoError import *
 
 '''
 	Controller do padrão MVC.
@@ -97,6 +98,8 @@ class Controller:
 		try:
 			glcs_criadas = self.__model.remover_recursao(elemento)
 			self.__adicionar_multiplos_elementos(glcs_criadas)
+		except OperacaoError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao realizar a operação.")
 
@@ -110,6 +113,8 @@ class Controller:
 			# TODO alterar o retorno, deve retornar: as GLCs criadas e Ne NA NF Vi
 			glcs_criadas = self.__model.transformar_em_propria(elemento)
 			self.__adicionar_multiplos_elementos(glcs_criadas)
+		except OperacaoError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao realizar a operação.")
 
@@ -123,6 +128,8 @@ class Controller:
 			# TODO alterar o retorno, deve retornar: a GLC criada e Ne
 			glc_criada = self.__model.transformar_epsilon_livre(elemento)
 			self.__adicionar_unico_elemento(glc_criada)
+		except OperacaoError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao realizar a operação.")
 
@@ -136,6 +143,8 @@ class Controller:
 			# TODO alterar o retorno, deve retornar: a GLC criada e NA (é NA o nome do conjunto dessa operacao?)
 			glc_criada = self.__model.remover_simples(elemento)
 			self.__adicionar_multiplos_elementos(glc_criada)
+		except OperacaoError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao realizar a operação.")
 
@@ -149,6 +158,8 @@ class Controller:
 			# TODO alterar o retorno, deve retornar: as GLCs criadas e NF Vi (NF é o conjunto dos inférteis mesmo?)
 			glcs_criadas = self.__model.remover_inuteis(elemento)
 			self.__adicionar_multiplos_elementos(glcs_criadas)
+		except OperacaoError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao realizar a operação.")
 
@@ -162,6 +173,8 @@ class Controller:
 			# TODO alterar o retorno, deve retornar: a GLC criada e NF (é NF o nome do conjunto dessa operacao?)
 			glc_criada = self.__model.remover_inferteis(elemento)
 			self.__adicionar_multiplos_elementos(glc_criada)
+		except OperacaoError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao realizar a operação.")
 
@@ -175,6 +188,8 @@ class Controller:
 			# TODO alterar o retorno, deve retornar: a GLC criada e Vi
 			glc_criada = self.__model.remover_inalcancaveis(elemento)
 			self.__adicionar_multiplos_elementos(glc_criada)
+		except OperacaoError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao realizar a operação.")
 

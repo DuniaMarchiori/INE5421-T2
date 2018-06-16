@@ -4,6 +4,7 @@ from Source.Model.Elemento import *
 from Source.Model.ListaElementos import *
 from Source.Model.GLC.GramaticaLivreDeContexto import *
 from Source.Model.FileManager.FileManager import *
+from Source.Model.Exceptions.OperacaoError import *
 
 from copy import deepcopy
 
@@ -71,8 +72,7 @@ class Model:
     '''
     def remover_recursao(self, gramatica):
         if not gramatica.existe_recursao_esq():
-            # TODO raise OperacaoDesnecessariaError("A gramática não possúi nenhuma recursão à esquerda")
-            pass
+            raise OperacaoError("a gramática não possúi nenhuma recursão à esquerda")
         else:
             resultantes = []
 
@@ -92,8 +92,7 @@ class Model:
     '''
     def transformar_em_propria(self, gramatica):
         if gramatica.eh_propria():
-            # TODO raise OperacaoDesnecessariaError("A gramática já é própria")
-            pass
+            raise OperacaoError("a gramática já é própria")
         else:
             resultantes = []
             conjuntos = []
@@ -123,8 +122,7 @@ class Model:
     '''
     def transformar_epsilon_livre(self, gramatica):
         if gramatica.eh_epsilon_livre():
-            # TODO raise OperacaoDesnecessariaError("A gramática já é epsilon-livre")
-            pass
+            raise OperacaoError("a gramática já é epsilon-livre")
         else:
             nova_gramatica, ne = gramatica.transforma_epsilon_livre()
             return nova_gramatica, ne
@@ -137,8 +135,7 @@ class Model:
     '''
     def remover_simples(self, gramatica):
         if not gramatica.existe_producoes_simples():
-            # TODO raise OperacaoDesnecessariaError("A gramática não possúi produções simples")
-            pass
+            raise OperacaoError("a gramática não possúi produções simples")
         else:
             nova_gramatica, na = gramatica.remove_simples()
             return nova_gramatica, na
@@ -151,8 +148,7 @@ class Model:
     '''
     def remover_inuteis(self, gramatica):
         if not gramatica.existem_inuteis():
-            # TODO raise OperacaoDesnecessariaError("A gramática não possúi produções inúteis")
-            pass
+            raise OperacaoError("a gramática não possúi produções inúteis")
         else:
             resultantes = []
             conjuntos = []
@@ -176,8 +172,7 @@ class Model:
     '''
     def remover_inferteis(self, gramatica):
         if not gramatica.existe_inferteis():
-            # TODO raise OperacaoDesnecessariaError("A gramática não possúi produções inférteis")
-            pass
+            raise OperacaoError("agramática não possúi produções inférteis")
         else:
             nova_gramatica, nf = gramatica.remove_inferteis()
             return nova_gramatica, nf
@@ -190,8 +185,7 @@ class Model:
     '''
     def remover_inalcancaveis(self, gramatica):
         if not gramatica.existe_inalcancavel():
-            # TODO raise OperacaoDesnecessariaError("A gramática não possúi produções inalcançáveis")
-            pass
+            raise OperacaoError("a gramática não possúi produções inalcançáveis")
         else:
             nova_gramatica, vi = gramatica.remove_inalcancaveis()
             return nova_gramatica, vi

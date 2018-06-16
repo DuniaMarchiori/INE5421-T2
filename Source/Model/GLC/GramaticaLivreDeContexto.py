@@ -3,6 +3,8 @@ from Source.Model.GLC.Artifacts.Producao import *
 from Source.Model.GLC.Artifacts.Vn import *
 from Source.Model.GLC.Artifacts.Vt import *
 from Source.Model.GLC.Artifacts.Exceptions.ParsingError import *
+from Source.Model.Exceptions.OperacaoError import *
+
 
 from Source.Model.Elemento import *
 
@@ -117,11 +119,9 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def remove_recursao_esq(self):
 		if self.existe_recursao_esq():
-			pass
-			# TODO raise OperacaoDesnecessariaError("A gramática não possúi recursão à esquerda")
+			raise OperacaoError("A gramática não possúi recursão à esquerda")
 		if not self.eh_propria():
-			pass
-			# TODO raise OperacaoDesnecessariaError("A gramática não é própria")
+			raise OperacaoError("A gramática não é própria")
 		else:
 			pass
 			# TODO
@@ -136,8 +136,7 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def transforma_epsilon_livre(self):
 		if self.eh_epsilon_livre():
-			pass
-			# TODO raise OperacaoDesnecessariaError("A gramática já é epsilon-livre")
+			raise OperacaoError("A gramática já é epsilon-livre")
 		else:
 			pass
 			# TODO
@@ -152,8 +151,7 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def remove_simples(self):
 		if not self.existe_producoes_simples():
-			pass
-			# TODO raise OperacaoDesnecessariaError("A gramática não possúi nenhuma produção simples")
+			raise OperacaoError("A gramática não possúi nenhuma produção simples")
 		else:
 			pass
 			# TODO
@@ -168,8 +166,7 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def remove_inferteis(self):
 		if not self.existe_inferteis():
-			pass
-			# TODO raise OperacaoDesnecessariaError("A gramática não possúi nenhuma produção infértil")
+			raise OperacaoError("A gramática não possúi nenhuma produção infértil")
 		else:
 			pass
 			# TODO
@@ -184,8 +181,7 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def remove_inalcancaveis(self):
 		if not self.existe_inalcancavel():
-			pass
-			# TODO raise OperacaoDesnecessariaError("A gramática não possúi nenhuma produção inalcançável")
+			raise OperacaoError("A gramática não possúi nenhuma produção inalcançável")
 		else:
 			pass
 			# TODO
