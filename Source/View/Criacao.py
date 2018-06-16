@@ -32,7 +32,7 @@ class Criacao:
 			self.__root.title("Edição de GLC")
 		self.__root.resizable(width=True, height=True)
 
-	def __inicializar_menus(self, nome, sentenca, tipo, adicao):
+	def __inicializar_menus(self, nome, sentenca, adicao):
 		padding = 10
 		self.__frame_menu_principal = Frame(self.__root, padx=padding, pady=padding)
 		self.__frame_menu_principal.pack()
@@ -79,9 +79,9 @@ class Criacao:
 	def is_showing(self):
 		return self.__root is not None
 
-	def show(self, nome="", sentenca="", tipo=None, adicao=True):
+	def show(self, nome="", sentenca="", adicao=True):
 		self.__inicializar_root(adicao)
-		self.__inicializar_menus(nome, sentenca, tipo, adicao)
+		self.__inicializar_menus(nome, sentenca, adicao)
 		self.__mostrar_menu(True)
 		self.__root.minsize(width=400, height=300)
 		self.__root.protocol("WM_DELETE_WINDOW", self.close)

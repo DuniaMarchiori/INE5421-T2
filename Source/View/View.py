@@ -57,10 +57,10 @@ class View:
 	def __inicializar_variaveis(self):
 		self.__popup_novo_elemento = Criacao(self.__root, self.__controller)
 		self.__popup_seleciona_elemento = SelecionaElemento(self.__root)
-		self.__int_operacao_selecionada = IntVar()
-		self.__int_operacao_gr_selecionada = IntVar()
-		self.__string_sentenca_a_reconhecer = StringVar()
-		self.__string_tamanho_enumerados = StringVar()
+		self.__string_simbolos_first = StringVar()
+		self.__string_simbolos_follow = StringVar()
+		self.__string_simbolos_first_nt = StringVar()
+		self.__string_n_passos = StringVar()
 
 	def __inicializar_root(self):
 		self.__root = Tk()
@@ -74,6 +74,7 @@ class View:
 	def __inicializar_menubar(self):
 		menu_main = Menu(self.__root)
 
+		'''
 		menu_abrir = Menu(menu_main, tearoff=0)
 		menu_abrir.add_command(label="Expressão Regular", command=self.cb_carregar_er)
 		menu_abrir.add_command(label="Gramática Regular", command=self.cb_carregar_gr)
@@ -83,7 +84,8 @@ class View:
 		menu_arquivo.add_command(label="Salvar", command=self.cb_salvar)
 
 		menu_main.add_cascade(label="Arquivo", menu=menu_arquivo)
-		menu_main.add_command(label="Sobre", command=lambda: self.mostrar_aviso("Trabalho 2 de INE5421\n\nPor:\nDúnia Marchiori\nVinicius Steffani Schweitzer"))
+		'''
+		menu_main.add_command(label="Sobre", command=lambda: self.mostrar_aviso("\nTrabalho 2 de INE5421\n\nPor:\nDúnia Marchiori\nVinicius Steffani Schweitzer", titulo="Sobre"))
 
 		self.__root.configure(menu=menu_main)
 
@@ -143,14 +145,11 @@ class View:
 		aba_info = ttk.Frame(self.__notebook_abas_de_representacao)
 		self.__notebook_abas_de_representacao.add(aba_info, text='Informações')
 
-		aba_conversoes = ttk.Frame(self.__notebook_abas_de_representacao)
-		self.__notebook_abas_de_representacao.add(aba_conversoes, text='Conversões')
+		aba_operacoes = ttk.Frame(self.__notebook_abas_de_representacao)
+		self.__notebook_abas_de_representacao.add(aba_operacoes, text='Operações')
 
-		aba_operacoes_linguagem = ttk.Frame(self.__notebook_abas_de_representacao)
-		self.__notebook_abas_de_representacao.add(aba_operacoes_linguagem, text='Operações')
-
-		aba_operacoes_especificas = ttk.Frame(self.__notebook_abas_de_representacao)
-		self.__notebook_abas_de_representacao.add(aba_operacoes_especificas, text='Operações Específicas')
+		aba_propriedades = ttk.Frame(self.__notebook_abas_de_representacao)
+		self.__notebook_abas_de_representacao.add(aba_propriedades, text='Propriedades')
 		# endregion
 
 		# region Frames das abas
@@ -160,22 +159,13 @@ class View:
 		self.__configura_elemento(self.__frame_info)
 		self.__inicializa_frame_informacoes()
 
-		self.__frame_conversoes = Frame(aba_conversoes, padx=padding, pady=padding)
-		self.__configura_elemento(self.__frame_conversoes)
-		self.__inicializa_frame_conversoes()
-
-		self.__frame_operacoes = Frame(aba_operacoes_linguagem, padx=padding, pady=padding)
+		self.__frame_operacoes = Frame(aba_operacoes, padx=padding, pady=padding)
 		self.__configura_elemento(self.__frame_operacoes)
 		self.__inicializa_frame_operacoes()
 
-		self.__frame_operacoes_gr = Frame(aba_operacoes_especificas, padx=padding, pady=padding)
-		self.__configura_elemento(self.__frame_operacoes_gr)
-		self.__inicializa_frame_operacoes_gr()
-		self.__frame_operacoes_gr.grid_remove()
-
-		self.__frame_operacoes_af = Frame(aba_operacoes_especificas, padx=padding, pady=padding)
-		self.__inicializa_frame_operacoes_af()
-		self.__configura_elemento(self.__frame_operacoes_af)
+		self.__frame_propriedades = Frame(aba_propriedades, padx=padding, pady=padding)
+		self.__configura_elemento(self.__frame_propriedades)
+		self.__inicializa_frame_propriedades()
 		# endregion
 
 	def __inicializa_frame_informacoes(self):
@@ -213,77 +203,97 @@ class View:
 		frame_alteracao = Frame(self.__frame_info)
 		self.__configura_elemento(frame_alteracao, row=2, column=0, rowweight=0, columnweight=1, sticky=E+W)
 
-		self.__button_alterar_elemento = Button(frame_alteracao, text="Alterar Elemento", command=self.alterar_elemento)
+		self.__button_alterar_elemento = Button(frame_alteracao, text="Alterar GLC", command=self.alterar_elemento)
 		self.__configura_elemento(self.__button_alterar_elemento, sticky="")
-
-	def __inicializa_frame_conversoes(self):
-		padding = 10
-		label_gr = Label(self.__frame_conversoes, text="Converter para Gramática Regular:", pady=padding)
-		self.__configura_elemento(label_gr, row=0, column=0, rowweight=0, columnweight=0, sticky=W)
-
-		self.__button_converter_para_gr = Button(self.__frame_conversoes, text="Converter", command=lambda: self.__controller.cb_converter_para_gr(self.__get_indice_selecionado()))
-		self.__configura_elemento(self.__button_converter_para_gr, row=0, column=1, rowweight=0, columnweight=0, sticky=W)
-
-		label_af = Label(self.__frame_conversoes, text="Converter para Autômato Finito:", pady=padding)
-		self.__configura_elemento(label_af, row=1, column=0, rowweight=0, columnweight=0, sticky=W)
-
-		self.__button_converter_para_af = Button(self.__frame_conversoes, text="Converter", command=lambda: self.__controller.cb_converter_para_af(self.__get_indice_selecionado()))
-		self.__configura_elemento(self.__button_converter_para_af, row=1, column=1, rowweight=0, columnweight=0, sticky=W)
 
 	def __inicializa_frame_operacoes(self):
 		padding = 10
 
-		label__operacao = Label(self.__frame_operacoes, text="Obter autômato finito do(a):")
-		self.__configura_elemento(label__operacao, row=0, column=0, rowweight=0, columnweight=0, sticky=NW)
+		label_rec = Label(self.__frame_operacoes, text="Remover recursões à esquerda", pady=padding)
+		self.__configura_elemento(label_rec, row=0, column=0, rowweight=0, columnweight=0, sticky=W)
+		self.__button_converter_rec = Button(self.__frame_operacoes, text="Remover", command=lambda: self.__controller.cb_operacao_remover_recursao_esq(self.__get_indice_selecionado()))
+		self.__configura_elemento(self.__button_converter_rec, row=0, column=1, rowweight=0, columnweight=0, sticky=W+E)
 
-		frame_seleciona_operacao = LabelFrame(self.__frame_operacoes, text="Operação")
-		self.__configura_elemento(frame_seleciona_operacao, row=1, column=0, rowweight=0, columnweight=0, sticky=NW)
+		label_propria = Label(self.__frame_operacoes, text="Transformar em GLC Própria", pady=padding)
+		self.__configura_elemento(label_propria, row=1, column=0, rowweight=0, columnweight=0, sticky=W)
+		self.__button_transformar_propria = Button(self.__frame_operacoes, text="Transformar", command=lambda: self.__controller.cb_operacao_propria(self.__get_indice_selecionado()))
+		self.__configura_elemento(self.__button_transformar_propria, row=1, column=1, rowweight=0, columnweight=0, sticky=W+E)
 
-		operacoes = [
-			("União deste elemento com outro", 0),
-			("Intersecção deste elemento com outro", 1),
-			("Diferença deste elemento com outro", 2),
-			("Reverso deste elemento", 3),
-			("Complemento deste elemento", 4)
-		]
-		self.__int_operacao_selecionada.set(0)
-		for texto, valor in operacoes:
-			b = Radiobutton(frame_seleciona_operacao, text=texto,
-							variable=self.__int_operacao_selecionada, value=valor)
-			self.__configura_elemento(b, row=valor, sticky=NW)
+		label_epsilon = Label(self.__frame_operacoes, text="Transformar em &-Livre", pady=padding)
+		self.__configura_elemento(label_epsilon, row=2, column=0, rowweight=0, columnweight=0, sticky=W)
+		self.__button_transformar_epsilon = Button(self.__frame_operacoes, text="Transformar", command=lambda: self.__controller.cb_operacao_epsilon(self.__get_indice_selecionado()))
+		self.__configura_elemento(self.__button_transformar_epsilon, row=2, column=1, rowweight=0, columnweight=0, sticky=W+E)
 
-		f = Frame(self.__frame_operacoes, pady=padding)
-		self.__configura_elemento(f, row=3, column=0, rowweight=0, columnweight=0, sticky=NW)
+		label_simples = Label(self.__frame_operacoes, text="Remover produções simples", pady=padding)
+		self.__configura_elemento(label_simples, row=3, column=0, rowweight=0, columnweight=0, sticky=W)
+		self.__button_transformar_simples = Button(self.__frame_operacoes, text="Remover", command=lambda: self.__controller.cb_operacao_simples(self.__get_indice_selecionado()))
+		self.__configura_elemento(self.__button_transformar_simples, row=3, column=1, rowweight=0, columnweight=0, sticky=W+E)
 
-		button_aplicar_operacao = Button(f, text="Aplicar Operação", command=self.cb_operacao_sobre_linguagem)
-		self.__configura_elemento(button_aplicar_operacao)
+		label_inuteis = Label(self.__frame_operacoes, text="Remover produções inúteis", pady=padding)
+		self.__configura_elemento(label_inuteis, row=4, column=0, rowweight=0, columnweight=0, sticky=W)
+		self.__button_transformar_inuteis = Button(self.__frame_operacoes, text="Remover", command=lambda: self.__controller.cb_operacao_inuteis(self.__get_indice_selecionado()))
+		self.__configura_elemento(self.__button_transformar_inuteis, row=4, column=1, rowweight=0, columnweight=0, sticky=W+E)
 
-	def __inicializa_frame_operacoes_gr(self):
+		label_inferteis = Label(self.__frame_operacoes, text="Remover produções inférteis", pady=padding)
+		self.__configura_elemento(label_inferteis, row=5, column=0, rowweight=0, columnweight=0, sticky=W)
+		self.__button_transformar_inferteis = Button(self.__frame_operacoes, text="Remover", command=lambda: self.__controller.cb_operacao_inferteis(self.__get_indice_selecionado()))
+		self.__configura_elemento(self.__button_transformar_inferteis, row=5, column=1, rowweight=0, columnweight=0, sticky=W+E)
+
+		label_inalcancaveis = Label(self.__frame_operacoes, text="Remover produções inalcançáveis", pady=padding)
+		self.__configura_elemento(label_inalcancaveis, row=6, column=0, rowweight=0, columnweight=0, sticky=W)
+		self.__button_transformar_inalcancaveis = Button(self.__frame_operacoes, text="Remover", command=lambda: self.__controller.cb_operacao_inalcancaveis(self.__get_indice_selecionado()))
+		self.__configura_elemento(self.__button_transformar_inalcancaveis, row=6, column=1, rowweight=0, columnweight=0, sticky=W+E)
+
+	def __inicializa_frame_propriedades(self):
 		padding = 10
-		label__operacao = Label(self.__frame_operacoes_gr, text="Obter gramática resultante do(a):")
-		self.__configura_elemento(label__operacao, row=0, column=0, rowweight=0, columnweight=0, sticky=NW)
 
-		frame_seleciona_operacao = LabelFrame(self.__frame_operacoes_gr, text="Operação")
-		self.__configura_elemento(frame_seleciona_operacao, row=1, column=0, rowweight=0, columnweight=0, sticky=NW)
+		label_finitude = Label(self.__frame_propriedades, text="GLC é vazia, finita ou infinita?", pady=padding)
+		self.__configura_elemento(label_finitude, row=0, column=0, rowweight=0, columnweight=0, columnspan=2, sticky=W)
+		self.__button_finitude = Button(self.__frame_propriedades, text="Calcular", command=lambda: self.__controller.cb_propriedade_finitude(self.__get_indice_selecionado()))
+		self.__configura_elemento(self.__button_finitude, row=0, column=2, rowweight=0, columnweight=0, sticky=W+E)
 
-		operacoes = [
-			("União desta gramática com outra", 0),
-			("Concatenação desta gramática com outra", 1),
-			("Fecho desta gramática", 2)
-		]
-		self.__int_operacao_gr_selecionada.set(0)
-		for texto, valor in operacoes:
-			b = Radiobutton(frame_seleciona_operacao, text=texto,
-							variable=self.__int_operacao_gr_selecionada, value=valor)
-			self.__configura_elemento(b, row=valor, sticky=NW)
+		label_first = Label(self.__frame_propriedades, text="Calcular First de: ", pady=padding)
+		self.__configura_elemento(label_first, row=1, column=0, rowweight=1, columnweight=0, sticky=W)
+		f = Frame(self.__frame_propriedades, padx=padding)
+		self.__configura_elemento(f, row=1, column=1, rowweight=0, columnweight=0, sticky=W+E)
+		entry_simbolos_first = Entry(f, textvariable=self.__string_simbolos_first)
+		self.__configura_elemento(entry_simbolos_first)
+		button_first = Button(self.__frame_propriedades, text="Calcular", command=self.cb_propriedade_first)
+		self.__configura_elemento(button_first, row=1, column=2, rowweight=0, columnweight=0, sticky=W+E)
 
-		f = Frame(self.__frame_operacoes_gr, pady=padding)
-		self.__configura_elemento(f, row=3, column=0, rowweight=0, columnweight=0, sticky=NW)
+		label_follow = Label(self.__frame_propriedades, text="Calcular Follow de: ", pady=padding)
+		self.__configura_elemento(label_follow, row=2, column=0, rowweight=1, columnweight=0, sticky=W)
+		f = Frame(self.__frame_propriedades, padx=padding)
+		self.__configura_elemento(f, row=2, column=1, rowweight=0, columnweight=0, sticky=W+E)
+		entry_simbolos_follow = Entry(f, textvariable=self.__string_simbolos_follow)
+		self.__configura_elemento(entry_simbolos_follow)
+		button_follow = Button(self.__frame_propriedades, text="Calcular", command=self.cb_propriedade_follow)
+		self.__configura_elemento(button_follow, row=2, column=2, rowweight=0, columnweight=0, sticky=W+E)
 
-		button_aplicar_operacao = Button(f, text="Aplicar Operação", command=self.cb_operacao_sobre_gr)
-		self.__configura_elemento(button_aplicar_operacao)
+		label_first_nt = Label(self.__frame_propriedades, text="Calcular First-NT de: ", pady=padding)
+		self.__configura_elemento(label_first_nt, row=3, column=0, rowweight=1, columnweight=0, sticky=W)
+		f = Frame(self.__frame_propriedades, padx=padding)
+		self.__configura_elemento(f, row=3, column=1, rowweight=0, columnweight=0, sticky=W+E)
+		entry_simbolos_first_nt = Entry(f, textvariable=self.__string_simbolos_first_nt)
+		self.__configura_elemento(entry_simbolos_first_nt)
+		button_first_nt = Button(self.__frame_propriedades, text="Calcular", command=self.cb_propriedade_first_nt)
+		self.__configura_elemento(button_first_nt, row=3, column=2, rowweight=0, columnweight=0, sticky=W+E)
 
-	def __inicializa_frame_operacoes_af(self):
+		label_fatorada = Label(self.__frame_propriedades, text="GLC está fatorada?", pady=padding)
+		self.__configura_elemento(label_fatorada, row=4, column=0, rowweight=0, columnweight=0, columnspan=2, sticky=W)
+		self.__button_fatorada = Button(self.__frame_propriedades, text="Calcular", command=lambda: self.__controller.cb_propriedade_fatorada(self.__get_indice_selecionado()))
+		self.__configura_elemento(self.__button_fatorada, row=4, column=2, rowweight=0, columnweight=0, sticky=W+E)
+
+		label_fatoravel = Label(self.__frame_propriedades, text="É fatorável em n-passos? n =", pady=padding)
+		self.__configura_elemento(label_fatoravel, row=5, column=0, rowweight=1, columnweight=0, sticky=W)
+		f = Frame(self.__frame_propriedades, padx=padding)
+		self.__configura_elemento(f, row=5, column=1, rowweight=0, columnweight=0, sticky=W+E)
+		entry_n_passos= Entry(f, textvariable=self.__string_n_passos)
+		self.__configura_elemento(entry_n_passos)
+		button_fatoravel = Button(self.__frame_propriedades, text="Calcular", command=self.cb_propriedade_fatoravel)
+		self.__configura_elemento(button_fatoravel, row=5, column=2, rowweight=0, columnweight=0, sticky=W+E)
+
+		'''
 		padding = 10
 		label_det = Label(self.__frame_operacoes_af, text="Obter autômato determinístico equivalente:", pady=padding)
 		self.__configura_elemento(label_det, row=0, column=0, columnspan=2, rowweight=0, columnweight=0, sticky=W)
@@ -320,6 +330,7 @@ class View:
 		self.__configura_elemento(button_reconhecer, row=3, column=2, rowweight=0, columnweight=0, sticky=W+E)
 
 		self.__frame_operacoes_af.grid_columnconfigure(1, minsize=200)
+		'''
 
 	def __inicializa_tela_sem_selecionado(self):
 		f = Frame(self.__frame_elemento_nulo)
@@ -343,19 +354,6 @@ class View:
 			self.__frame_elemento_nulo.grid_remove()
 			self.__frame_manipulacao_elemento.grid()
 
-			if num_tela == 1:  # GR
-				self.__notebook_abas_de_representacao.tab(3, state=NORMAL)
-				self.__frame_operacoes_af.grid_remove()
-				self.__frame_operacoes_gr.grid()
-			elif num_tela == 2:  # ER
-				self.__notebook_abas_de_representacao.tab(3, state=DISABLED)
-				self.__frame_operacoes_gr.grid_remove()
-				self.__frame_operacoes_af.grid_remove()
-			elif num_tela == 3:  # AF
-				self.__notebook_abas_de_representacao.tab(3, state=NORMAL)
-				self.__frame_operacoes_gr.grid_remove()
-				self.__frame_operacoes_af.grid()
-
 	def __atualiza_operacao(self, elemento_selecionado):
 		if elemento_selecionado is not None:
 			self.__estado_botoes_da_lista(estado=True)
@@ -366,10 +364,6 @@ class View:
 				self.__altera_tela_operacao(1)
 				tipo = "Gramática Livre de Contexto"
 				self.__frame_manipulacao_elemento.configure(text=tipo)
-				self.__button_converter_para_gr['state'] = DISABLED
-				self.__button_converter_para_af['state'] = NORMAL
-				self.__button_alterar_elemento['state'] = NORMAL
-				self.__button_alterar_elemento.grid()
 			self.__atualiza_visualizacao_do_elemento(nome, tipo, representacao)
 		else:
 			self.__altera_tela_operacao(0)
@@ -406,10 +400,10 @@ class View:
 		if not self.__popup_novo_elemento.is_showing():
 			self.__popup_novo_elemento.show()
 
-	def abrir_janela_edicao_de_elemento(self, nome, sentenca, tipo):
+	def abrir_janela_edicao_de_elemento(self, nome, sentenca):
 		current_size = self.__listbox_lista_de_linguagens.size()
 		if not self.__popup_novo_elemento.is_showing():
-			self.__popup_novo_elemento.show(nome, sentenca, tipo, False)
+			self.__popup_novo_elemento.show(nome, sentenca, False)
 		self.__root.wait_window(self.__popup_novo_elemento.get_root())
 		return current_size != self.__listbox_lista_de_linguagens.size()
 
@@ -536,41 +530,25 @@ class View:
 		indice = self.__get_indice_selecionado()
 		self.__controller.cb_alterar_elemento_selecionado(indice)
 
-	def cb_operacao_sobre_linguagem(self):
-		indice_primeiro = self.__get_indice_selecionado()
-		operacao = self.__int_operacao_selecionada.get()
-		if operacao < 3:
-			indice_segundo = self.abrir_janela_seleciona_elemento()
-		else:
-			indice_segundo = None
-		self.__controller.cb_aplica_operacao(indice_primeiro, indice_segundo, operacao)
-
-	def cb_operacao_sobre_gr(self):
-		indice_primeiro = self.__get_indice_selecionado()
-		operacao = self.__int_operacao_gr_selecionada.get()
-		if operacao != 2:
-			indice_segundo = self.abrir_janela_seleciona_elemento("GR")
-		else:
-			indice_segundo = None
-		self.__controller.cb_aplica_operacao_gr(indice_primeiro, indice_segundo, operacao)
-
-	def cb_determiniza_af(self):
+	def cb_propriedade_first(self):
 		indice_selecionado = self.__get_indice_selecionado()
-		self.__controller.cb_determiniza_af(indice_selecionado)
+		simbolos = self.__string_simbolos_first.get()
+		self.__controller.cb_propriedade_first(indice_selecionado, simbolos)
 
-	def cb_minimiza_af(self):
+	def cb_propriedade_follow(self):
 		indice_selecionado = self.__get_indice_selecionado()
-		self.__controller.cb_minimiza_af(indice_selecionado)
+		simbolos = self.__string_simbolos_follow.get()
+		self.__controller.cb_propriedade_follow(indice_selecionado, simbolos)
 
-	def cb_reconhece_sentenca(self):
+	def cb_propriedade_first_nt(self):
 		indice_selecionado = self.__get_indice_selecionado()
-		sentenca = self.__string_sentenca_a_reconhecer.get()
-		self.__controller.cb_reconhecimento(indice_selecionado, sentenca)
+		simbolos = self.__string_simbolos_first_nt.get()
+		self.__controller.cb_propriedade_first_nt(indice_selecionado, simbolos)
 
-	def cb_enumera_sentencas(self):
+	def cb_propriedade_fatoravel(self):
 		indice_selecionado = self.__get_indice_selecionado()
-		tamanho = self.__string_tamanho_enumerados.get()
-		self.__controller.cb_enumeracao(indice_selecionado, tamanho)
+		passos = self.__string_n_passos.get()
+		self.__controller.cb_propriedade_fatoravel(indice_selecionado, passos)
 
 	def cb_salvar(self):
 		if self.__get_indice_selecionado() is not None:

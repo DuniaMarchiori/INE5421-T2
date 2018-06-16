@@ -14,13 +14,12 @@ import re
 '''
 class GramaticaLivreDeContexto(Elemento):
 
-	__conjunto_producoes = OrderedDict()
-	__terminais = set()
-	__nao_terminais = set()
-	__vn_inicial = None
-
 	def __init__(self, nome):
 		super(GramaticaLivreDeContexto, self).__init__(TipoElemento.GLC, nome)
+		self.__conjunto_producoes = OrderedDict()
+		self.__terminais = set()
+		self.__nao_terminais = set()
+		self.__vn_inicial = None
 
 	def parse(self, entrada):
 		inicial_definido = False

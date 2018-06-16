@@ -78,7 +78,7 @@ class Controller:
 	def cb_alterar_elemento(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			sucesso = self.__view.abrir_janela_edicao_de_elemento(elemento.get_nome(), elemento.to_string(), elemento.get_tipo())
+			sucesso = self.__view.abrir_janela_edicao_de_elemento(elemento.get_nome(), elemento.to_string())
 			if sucesso:
 				self.__view.reposiciona_elemento_editado(indice)
 				self.__model.reposiciona_elemento_editado(indice)
