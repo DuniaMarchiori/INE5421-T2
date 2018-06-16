@@ -26,22 +26,31 @@ class GramaticaLivreDeContexto(Elemento):
 		entrada_linhas = entrada.splitlines()
 		num_linha = 0
 		for linha in entrada_linhas:
-			linha_limpa = re.sub("\s+", " ", linha)
-			if simb_derivacao in linha_limpa:
-				producao_lista = linha_limpa.split(simb_derivacao)
-				if len(producao_lista) <= 2:
-					produtor = self.__obtem_produtor(producao_lista[0], num_linha)
-					if not inicial_definido:
-						self.__vn_inicial = produtor
-						inicial_definido = True
-					producoes = self.__obtem_producoes(produtor, producao_lista[1], num_linha)
-					for producao in producoes:
-						self.adiciona_producao(produtor, producao)
+			if linha: # Se a linha não for em branco
+				linha_limpa = re.sub("\s+", " ", linha)
+				if simb_derivacao in linha_limpa:
+					producao_lista = linha_limpa.split(simb_derivacao)
+					if len(producao_lista) <= 2:
+						produtor = self.__obtem_produtor(producao_lista[0], num_linha)
+						if not inicial_definido:
+							self.__vn_inicial = produtor
+							inicial_definido = True
+						producoes = self.__obtem_producoes(produtor, producao_lista[1], num_linha)
+						for producao in producoes:
+							self.adiciona_producao(produtor, producao)
+					else:
+						raise ParsingError(": símbolo de derivação (" + simb_derivacao + ") encontrado múltiplas vezes na linha " + str(num_linha))
 				else:
-					raise ParsingError(": símbolo de derivação (" + simb_derivacao + ") encontrado múltiplas vezes na linha " + str(num_linha))
-			else:
-				raise ParsingError(": símbolo de derivação (" + simb_derivacao + ") não encontrado na linha " + str(num_linha))
-			num_linha += 1
+					raise ParsingError(": símbolo de derivação (" + simb_derivacao + ") não encontrado na linha " + str(num_linha))
+				num_linha += 1
+		if self.__existe_vn_indefinido():
+			raise ParsingError(": existem símbolos de Vn que não tiveram suas produções definidas")
+
+	def __existe_vn_indefinido(self):
+		for vn in self.__nao_terminais:
+			if vn not in self.__conjunto_producoes:
+				return True
+		return False
 
 	def __obtem_produtor(self, produtor, linha):
 		produtor_limpo = produtor.strip()
@@ -105,6 +114,136 @@ class GramaticaLivreDeContexto(Elemento):
 		if vn not in self.__conjunto_producoes:
 			self.__conjunto_producoes[vn] = []
 		self.__conjunto_producoes[vn].append(producao)
+
+	def remove_recursao_esq(self):
+		if self.existe_recursao_esq():
+			pass
+			# TODO raise OperacaoDesnecessariaError("A gramática não possúi recursão à esquerda")
+		if not self.eh_propria():
+			pass
+			# TODO raise OperacaoDesnecessariaError("A gramática não é própria")
+		else:
+			pass
+			# TODO
+			# Fazer:
+			#   - Cria uma nova GLC sem recursão à esquerda usando o algoritmo e retorna ela.
+
+	def existe_recursao_esq(self):
+		pass
+		# TODO
+		# Deve:
+		#   - Verificar se existem recursões à esquerda nessa gramática (retorna True ou False)
+
+	def transforma_epsilon_livre(self):
+		if self.eh_epsilon_livre():
+			pass
+			# TODO raise OperacaoDesnecessariaError("A gramática já é epsilon-livre")
+		else:
+			pass
+			# TODO
+			# Fazer:
+			#   - Cria uma nova GLC epsilon-livre usando o algoritmo e retorna ela.
+
+	def eh_epsilon_livre(self):
+		pass
+		# TODO
+		# Deve:
+		#   - Verificar se é &-livre (retorna True ou False)
+
+	def remove_simples(self):
+		if not self.existe_producoes_simples():
+			pass
+			# TODO raise OperacaoDesnecessariaError("A gramática não possúi nenhuma produção simples")
+		else:
+			pass
+			# TODO
+			# Fazer:
+			#   - Cria uma nova GLC sem produções simples usando o algoritmo e retorna ela.
+
+	def existe_producoes_simples(self):
+		pass
+		# TODO
+		# Deve:
+		#   - Verificar se existem produções simples (retorna True ou False)
+
+	def remove_inferteis(self):
+		if not self.existe_inferteis():
+			pass
+			# TODO raise OperacaoDesnecessariaError("A gramática não possúi nenhuma produção infértil")
+		else:
+			pass
+			# TODO
+			# Fazer:
+			#   - Cria uma nova GLC sem produções inférteis usando o algoritmo e retorna ela.
+
+	def existe_inferteis(self):
+		pass
+		# TODO
+		# Deve:
+		#   - Verificar se existem produções inférteis (retorna True ou False)
+
+	def remove_inalcancaveis(self):
+		if not self.existe_inalcancavel():
+			pass
+			# TODO raise OperacaoDesnecessariaError("A gramática não possúi nenhuma produção inalcançável")
+		else:
+			pass
+			# TODO
+			# Fazer:
+			#   - Cria uma nova GLC sem produções inalcançáveis usando o algoritmo e retorna ela.
+
+	def existe_inalcancavel(self):
+		pass
+		# TODO
+		# Deve:
+		#   - Verificar se existem produções inalcancaveis (retorna True ou False)
+
+	def existem_inuteis(self):
+		return self.existe_inferteis() or self.existe_inalcancavel()
+
+	def eh_propria(self):
+		return self.eh_epsilon_livre() and (not self.existe_producoes_simples()) and (not self.existem_inuteis())
+
+	# Propriedades
+
+	def finitude(self):
+		pass
+		# TODO
+		# Deve:
+		#   - Retornar 0 se for vazia, 1 se for finita ou 2 se for infinita (Fazer assim primeiro, se sobrar tempo podemos fazer um enum mais bonito)
+
+	def first(self, vn):
+		pass
+		# TODO
+		# Deve:
+		#   - Verificar se vn pertence à Vn
+		#   - Retornar o conjunto de First de vn
+
+	def follow(self, vn):
+		pass
+		# TODO
+		# Deve:
+		#   - Verificar se vn pertence à Vn
+		#   - Retornar o conjunto de Follow de vn
+
+	def first_nt(self, vn):
+		pass
+		# TODO
+		# Deve:
+		#   - Verificar se vn pertence à Vn
+		#   - Retornar o conjunto de First-NT de vn
+
+	def esta_fatorada(self):
+		pass
+		# TODO
+		# Deve:
+		#   - Verificar se a gramática está fatorada (da pra utilizar o First)
+
+	def eh_fatoravel_em_n_passos(self, n):
+		pass
+		# TODO
+		# Deve:
+		#   - Tentar fatorar em no máximo n passos
 
 	def to_string(self):
 		return self.__str__()

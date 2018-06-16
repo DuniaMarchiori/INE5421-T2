@@ -53,7 +53,6 @@ class Controller:
 		Método que recebe um índice e remove esse objeto da lista.
 		\:param indice é o índice do elemento na lista.
 	'''
-	# NÃO ADAPTADO. VERIFICAR O QUE PRECISA SER ADAPTADO
 	def cb_remover_elemento(self, indice):
 		self.__model.remover_elemento(indice)
 		self.__view.remover_elemento_da_lista(indice)
@@ -62,7 +61,6 @@ class Controller:
 		Método que é chamado ao alterar o elemento selecionado na lista.
 		\:param indice é o índice do elemento na lista.
 	'''
-	# NÃO ADAPTADO. VERIFICAR O QUE PRECISA SER ADAPTADO
 	def cb_alterar_elemento_selecionado(self, indice):
 		elemento = None
 		if indice is not None:
@@ -71,10 +69,8 @@ class Controller:
 
 	'''
 		Altera um elemento.
-		\:param indice é o índice do autômato na lista.
-		\:param tamanho é o tamanho das sentenças que serão enumeradas.
+		\:param indice é o índice do elemento na lista.
 	'''
-	# NÃO ADAPTADO. VERIFICAR O QUE PRECISA SER ADAPTADO
 	def cb_alterar_elemento(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
@@ -86,28 +82,190 @@ class Controller:
 		except Exception:
 			self.__view.mostrar_aviso("O elemento não foi alterado.")
 
-	# NÃO ADAPTADO. VERIFICAR O QUE PRECISA SER ADAPTADO
 	def cb_duplica_elemento(self, indice):
 		copia = self.__model.duplicar(indice)
 		self.__adicionar_unico_elemento(copia)
 
-	# NÃO ADAPTADO. VERIFICAR O QUE PRECISA SER ADAPTADO
-	def cb_salvar_elemento(self, indice):
-		elemento = self.__model.obter_elemento_por_indice(indice)
-		caminho = self.__view.salvar_arquivo(elemento.get_nome())
-		resultado = self.__model.salvar_elemento(caminho, indice)
-		if resultado:
-			self.__view.mostrar_aviso("Elemento salvo com sucesso.", titulo="Sucesso")
-		else:
-			self.__view.mostrar_aviso("Falha ao salvar arquivo.")
+	# Callbacks das Operações
 
-	# NÃO ADAPTADO. VERIFICAR O QUE PRECISA SER ADAPTADO
-	def cb_carregar_gr(self, caminho):
+	'''
+		Remove recursão à esquerda.
+		\:param indice é o índice da GLC na lista.
+	'''
+	def cb_operacao_remover_recursao_esq(self, indice):
+		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			conteudo = self.__model.carregar_elemento(caminho)
-			nome_elemento = self.__model.nome_arquivo(caminho)
-			resultado = self.cb_nova_gramatica(nome_elemento, conteudo)
-			if resultado:
-				self.__view.mostrar_aviso("Gramática carregada com sucesso.", titulo="Sucesso")
-		except Exception:
-			self.__view.mostrar_aviso("Erro ao carregar arquivo.")
+			glcs_criadas = self.__model.remover_recursao(elemento)
+			self.__adicionar_multiplos_elementos(glcs_criadas)
+		except:
+			self.__view.mostrar_aviso("Erro ao realizar a operação.")
+
+	'''
+		Transforma a gramática em própria.
+		\:param indice é o índice da GLC na lista.
+	'''
+	def cb_operacao_propria(self, indice):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			# TODO alterar o retorno, deve retornar: as GLCs criadas e Ne NA NF Vi
+			glcs_criadas = self.__model.transformar_em_propria(elemento)
+			self.__adicionar_multiplos_elementos(glcs_criadas)
+		except:
+			self.__view.mostrar_aviso("Erro ao realizar a operação.")
+
+	'''
+		Transforma a gramática em epsilon-livre.
+		\:param indice é o índice da GLC na lista.
+	'''
+	def cb_operacao_epsilon(self, indice):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			# TODO alterar o retorno, deve retornar: a GLC criada e Ne
+			glc_criada = self.__model.transformar_epsilon_livre(elemento)
+			self.__adicionar_unico_elemento(glc_criada)
+		except:
+			self.__view.mostrar_aviso("Erro ao realizar a operação.")
+
+	'''
+		Remove produções simples.
+		\:param indice é o índice da GLC na lista.
+	'''
+	def cb_operacao_simples(self, indice):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			# TODO alterar o retorno, deve retornar: a GLC criada e NA (é NA o nome do conjunto dessa operacao?)
+			glc_criada = self.__model.remover_simples(elemento)
+			self.__adicionar_multiplos_elementos(glc_criada)
+		except:
+			self.__view.mostrar_aviso("Erro ao realizar a operação.")
+
+	'''
+		Remove produções inúteis.
+		\:param indice é o índice da GLC na lista.
+	'''
+	def cb_operacao_inuteis(self, indice):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			# TODO alterar o retorno, deve retornar: as GLCs criadas e NF Vi (NF é o conjunto dos inférteis mesmo?)
+			glcs_criadas = self.__model.remover_inuteis(elemento)
+			self.__adicionar_multiplos_elementos(glcs_criadas)
+		except:
+			self.__view.mostrar_aviso("Erro ao realizar a operação.")
+
+	'''
+		Remove produções inférteis.
+		\:param indice é o índice da GLC na lista.
+	'''
+	def cb_operacao_inferteis(self, indice):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			# TODO alterar o retorno, deve retornar: a GLC criada e NF (é NF o nome do conjunto dessa operacao?)
+			glc_criada = self.__model.remover_inferteis(elemento)
+			self.__adicionar_multiplos_elementos(glc_criada)
+		except:
+			self.__view.mostrar_aviso("Erro ao realizar a operação.")
+
+	'''
+		Remove produções inalcançáveis.
+		\:param indice é o índice da GLC na lista.
+	'''
+	def cb_operacao_inalcancaveis(self, indice):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			# TODO alterar o retorno, deve retornar: a GLC criada e Vi
+			glc_criada = self.__model.remover_inalcancaveis(elemento)
+			self.__adicionar_multiplos_elementos(glc_criada)
+		except:
+			self.__view.mostrar_aviso("Erro ao realizar a operação.")
+
+	# Callbacks das Propriedades
+
+	'''
+		Verifica se a GLC é vazia, finita ou infinita.
+		\:param indice é o índice da GLC na lista.
+	'''
+	def cb_propriedade_finitude(self, indice):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			resultado = self.__model.verificar_finitude(elemento)
+			if resultado == 0:
+				self.__view.mostrar_aviso("A GLC é Vazia.", titulo="Finitude")
+			elif resultado == 1:
+				self.__view.mostrar_aviso("A GLC é Finita.", titulo="Finitude")
+			elif resultado == 2:
+				self.__view.mostrar_aviso("A GLC é Infinita.", titulo="Finitude")
+		except:
+			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
+
+	'''
+		Obtem o First do Vn passado por parâmetro.
+		\:param indice é o índice da GLC na lista.
+		\:param vn é o simbolo pertencente à Vn cujo First será calculado.
+	'''
+	def cb_propriedade_first(self, indice, vn):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			first = self.__model.calcular_first(elemento, vn)
+			self.__view.mostrar_aviso("O First de " + vn + " é: {" + ', '.join(first) + "}", titulo="First")
+		# TODO adicionar except para o caso do simbolo dado não ser um Vn
+		except:
+			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
+
+	'''
+		Obtem o Follow do Vn passado por parâmetro.
+		\:param indice é o índice da GLC na lista.
+		\:param vn é o simbolo pertencente à Vn cujo Follow será calculado.
+	'''
+	def cb_propriedade_follow(self, indice, vn):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			follow = self.__model.calcular_follow(elemento, vn)
+			self.__view.mostrar_aviso("O Follow de " + vn + " é: {" + ', '.join(follow) + "}", titulo="Follow")
+		# TODO adicionar except para o caso do simbolo dado não ser um Vn
+		except:
+			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
+
+	'''
+		Obtem o First-NT do Vn passado por parâmetro.
+		\:param indice é o índice da GLC na lista.
+		\:param vn é o simbolo pertencente à Vn cujo First será calculado.
+	'''
+	def cb_propriedade_first_nt(self, indice, vn):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			first_nt = self.__model.calcular_first_nt(elemento, vn)
+			self.__view.mostrar_aviso("O First-NT de " + vn + " é: {" + ', '.join(first_nt) + "}", titulo="First-NT")
+		# TODO adicionar except para o caso do simbolo dado não ser um Vn
+		except:
+			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
+
+	'''
+		Verifica se a GLC está fatorada ou não.
+		\:param indice é o índice da GLC na lista.
+	'''
+	def cb_propriedade_fatorada(self, indice):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			fatorada = self.__model.verificar_fatorada(elemento)
+			if fatorada:
+				self.__view.mostrar_aviso("Esta GLC está fatorada.", titulo="Fatorada")
+			else:
+				self.__view.mostrar_aviso("Esta GLC não está fatorada.", titulo="Fatorada")
+		except:
+			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
+
+	'''
+		Verifica se uma GLC é fatorável em n passos.
+		\:param indice é o índice da GLC na lista.
+		\:param n é o número de passos máximo para verificar se é fatoravel.
+	'''
+	def cb_propriedade_fatoravel(self, indice, n):
+		elemento = self.__model.obter_elemento_por_indice(indice)
+		try:
+			fatoravel = self.__model.verificar_fatoravel(elemento, n)
+			if fatoravel:
+				self.__view.mostrar_aviso("Esta GLC é fatorável em " + str(n) + " passos.", titulo="Fatorável")
+			else:
+				self.__view.mostrar_aviso("Esta GLC não é fatorável em " + str(n) + " passos.", titulo="Fatorável")
+		except:
+			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")

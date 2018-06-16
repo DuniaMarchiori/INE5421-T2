@@ -10,40 +10,6 @@ from Source.View.SelecaoElemento import SelecionaElemento
 
 class View:
 
-	__controller = None
-
-	__root = None
-	__frame_menu_principal = None
-
-	__listbox_lista_de_linguagens = None
-
-	__button_nova_linguagem = None
-	__button_deletar_linguagem = None
-	__button_clonar_linguagem = None
-
-	__frame_manipulacao_elemento = None
-	__frame_elemento_nulo = None
-	__notebook_abas_de_representacao = None
-
-	__frame_info = None
-	__label_nome_display = None
-	__label_tipo_display = None
-	__text_visualizacao = None
-	__frame_conversoes = None
-	__frame_operacoes = None
-	__int_operacao_selecionada = None
-	__frame_operacoes_gr = None
-	__int_operacao_gr_selecionada = None
-	__frame_operacoes_af = None
-
-	__button_alterar_elemento = None
-
-	__button_converter_para_gr = None
-	__button_converter_para_af = None
-
-	__popup_novo_elemento = None
-	__popup_seleciona_elemento = None
-
 	def __init__(self, controller):
 		self.__controller = controller
 		self.__inicializar_root()
@@ -73,20 +39,7 @@ class View:
 
 	def __inicializar_menubar(self):
 		menu_main = Menu(self.__root)
-
-		'''
-		menu_abrir = Menu(menu_main, tearoff=0)
-		menu_abrir.add_command(label="Expressão Regular", command=self.cb_carregar_er)
-		menu_abrir.add_command(label="Gramática Regular", command=self.cb_carregar_gr)
-
-		menu_arquivo = Menu(menu_main, tearoff=0)
-		menu_arquivo.add_cascade(label="Abrir", menu=menu_abrir)
-		menu_arquivo.add_command(label="Salvar", command=self.cb_salvar)
-
-		menu_main.add_cascade(label="Arquivo", menu=menu_arquivo)
-		'''
 		menu_main.add_command(label="Sobre", command=lambda: self.mostrar_aviso("\nTrabalho 2 de INE5421\n\nPor:\nDúnia Marchiori\nVinicius Steffani Schweitzer", titulo="Sobre"))
-
 		self.__root.configure(menu=menu_main)
 
 	def __configura_elemento(self, elemento, row=0, column=0, rowspan=1, columnspan=1, rowweight=1, columnweight=1, sticky=N+S+E+W):
@@ -177,10 +130,10 @@ class View:
 		self.__configura_elemento(label_nome, row=0, column=0, rowweight=0, columnweight=0, sticky=W)
 		self.__label_nome_display = Label(frame_dados, text="NOME", wraplength=500, justify=LEFT)
 		self.__configura_elemento(self.__label_nome_display, row=0, column=1, rowweight=0, columnweight=1, sticky=W)
-		label_tipo = Label(frame_dados, text="Tipo:")
-		self.__configura_elemento(label_tipo, row=1, column=0, rowweight=0, columnweight=0, sticky=W)
-		self.__label_tipo_display = Label(frame_dados, text="TIPO")
-		self.__configura_elemento(self.__label_tipo_display, row=1, column=1, rowweight=0, columnweight=1, sticky=W)
+		#label_tipo = Label(frame_dados, text="Tipo:")
+		#self.__configura_elemento(label_tipo, row=1, column=0, rowweight=0, columnweight=0, sticky=W)
+		#self.__label_tipo_display = Label(frame_dados, text="TIPO")
+		#self.__configura_elemento(self.__label_tipo_display, row=1, column=1, rowweight=0, columnweight=1, sticky=W)
 
 		frame_visualizacao = Frame(self.__frame_info, pady=10)
 		self.__configura_elemento(frame_visualizacao, row=1, column=0)
@@ -209,37 +162,37 @@ class View:
 	def __inicializa_frame_operacoes(self):
 		padding = 10
 
-		label_rec = Label(self.__frame_operacoes, text="Remover recursões à esquerda", pady=padding)
+		label_rec = Label(self.__frame_operacoes, text="Remover recursões à esquerda", pady=padding, padx=padding)
 		self.__configura_elemento(label_rec, row=0, column=0, rowweight=0, columnweight=0, sticky=W)
 		self.__button_converter_rec = Button(self.__frame_operacoes, text="Remover", command=lambda: self.__controller.cb_operacao_remover_recursao_esq(self.__get_indice_selecionado()))
 		self.__configura_elemento(self.__button_converter_rec, row=0, column=1, rowweight=0, columnweight=0, sticky=W+E)
 
-		label_propria = Label(self.__frame_operacoes, text="Transformar em GLC Própria", pady=padding)
+		label_propria = Label(self.__frame_operacoes, text="        - Transformar em GLC Própria", pady=padding, padx=padding)
 		self.__configura_elemento(label_propria, row=1, column=0, rowweight=0, columnweight=0, sticky=W)
 		self.__button_transformar_propria = Button(self.__frame_operacoes, text="Transformar", command=lambda: self.__controller.cb_operacao_propria(self.__get_indice_selecionado()))
 		self.__configura_elemento(self.__button_transformar_propria, row=1, column=1, rowweight=0, columnweight=0, sticky=W+E)
 
-		label_epsilon = Label(self.__frame_operacoes, text="Transformar em &-Livre", pady=padding)
+		label_epsilon = Label(self.__frame_operacoes, text="                - Transformar em Epsilon-Livre", pady=padding, padx=padding)
 		self.__configura_elemento(label_epsilon, row=2, column=0, rowweight=0, columnweight=0, sticky=W)
 		self.__button_transformar_epsilon = Button(self.__frame_operacoes, text="Transformar", command=lambda: self.__controller.cb_operacao_epsilon(self.__get_indice_selecionado()))
 		self.__configura_elemento(self.__button_transformar_epsilon, row=2, column=1, rowweight=0, columnweight=0, sticky=W+E)
 
-		label_simples = Label(self.__frame_operacoes, text="Remover produções simples", pady=padding)
+		label_simples = Label(self.__frame_operacoes, text="                - Remover produções simples", pady=padding, padx=padding)
 		self.__configura_elemento(label_simples, row=3, column=0, rowweight=0, columnweight=0, sticky=W)
 		self.__button_transformar_simples = Button(self.__frame_operacoes, text="Remover", command=lambda: self.__controller.cb_operacao_simples(self.__get_indice_selecionado()))
 		self.__configura_elemento(self.__button_transformar_simples, row=3, column=1, rowweight=0, columnweight=0, sticky=W+E)
 
-		label_inuteis = Label(self.__frame_operacoes, text="Remover produções inúteis", pady=padding)
+		label_inuteis = Label(self.__frame_operacoes, text="                - Remover produções inúteis", pady=padding, padx=padding)
 		self.__configura_elemento(label_inuteis, row=4, column=0, rowweight=0, columnweight=0, sticky=W)
 		self.__button_transformar_inuteis = Button(self.__frame_operacoes, text="Remover", command=lambda: self.__controller.cb_operacao_inuteis(self.__get_indice_selecionado()))
 		self.__configura_elemento(self.__button_transformar_inuteis, row=4, column=1, rowweight=0, columnweight=0, sticky=W+E)
 
-		label_inferteis = Label(self.__frame_operacoes, text="Remover produções inférteis", pady=padding)
+		label_inferteis = Label(self.__frame_operacoes, text="                                - Remover produções inférteis", pady=padding, padx=padding)
 		self.__configura_elemento(label_inferteis, row=5, column=0, rowweight=0, columnweight=0, sticky=W)
 		self.__button_transformar_inferteis = Button(self.__frame_operacoes, text="Remover", command=lambda: self.__controller.cb_operacao_inferteis(self.__get_indice_selecionado()))
 		self.__configura_elemento(self.__button_transformar_inferteis, row=5, column=1, rowweight=0, columnweight=0, sticky=W+E)
 
-		label_inalcancaveis = Label(self.__frame_operacoes, text="Remover produções inalcançáveis", pady=padding)
+		label_inalcancaveis = Label(self.__frame_operacoes, text="                                - Remover produções inalcançáveis", pady=padding, padx=padding)
 		self.__configura_elemento(label_inalcancaveis, row=6, column=0, rowweight=0, columnweight=0, sticky=W)
 		self.__button_transformar_inalcancaveis = Button(self.__frame_operacoes, text="Remover", command=lambda: self.__controller.cb_operacao_inalcancaveis(self.__get_indice_selecionado()))
 		self.__configura_elemento(self.__button_transformar_inalcancaveis, row=6, column=1, rowweight=0, columnweight=0, sticky=W+E)
@@ -293,50 +246,11 @@ class View:
 		button_fatoravel = Button(self.__frame_propriedades, text="Calcular", command=self.cb_propriedade_fatoravel)
 		self.__configura_elemento(button_fatoravel, row=5, column=2, rowweight=0, columnweight=0, sticky=W+E)
 
-		'''
-		padding = 10
-		label_det = Label(self.__frame_operacoes_af, text="Obter autômato determinístico equivalente:", pady=padding)
-		self.__configura_elemento(label_det, row=0, column=0, columnspan=2, rowweight=0, columnweight=0, sticky=W)
-
-		button_determinizar = Button(self.__frame_operacoes_af, text="Determinizar", command=self.cb_determiniza_af)
-		self.__configura_elemento(button_determinizar, row=0, column=2, rowweight=0, columnweight=0, sticky=W)
-
-		label_af = Label(self.__frame_operacoes_af, text="Obter autômato mínimo equivalente:", pady=padding)
-		self.__configura_elemento(label_af, row=1, column=0, columnspan=2, rowweight=0, columnweight=0, sticky=W)
-
-		button_converter_para_af = Button(self.__frame_operacoes_af, text="Minimizar", command=self.cb_minimiza_af)
-		self.__configura_elemento(button_converter_para_af, row=1, column=2, rowweight=0, columnweight=0, sticky=W+E)
-
-		label_reconhecer = Label(self.__frame_operacoes_af, text="Reconhecer sentença:", pady=padding)
-		self.__configura_elemento(label_reconhecer, row=2, column=0, rowweight=1, columnweight=0, sticky=W)
-
-		f = Frame(self.__frame_operacoes_af, padx=padding)
-		self.__configura_elemento(f, row=2, column=1, rowweight=0, columnweight=0, sticky=W+E)
-		entry_sentenca = Entry(f, textvariable=self.__string_sentenca_a_reconhecer)
-		self.__configura_elemento(entry_sentenca)
-
-		button_reconhecer = Button(self.__frame_operacoes_af, text="Reconhecer", command=self.cb_reconhece_sentenca)
-		self.__configura_elemento(button_reconhecer, row=2, column=2, rowweight=0, columnweight=0, sticky=W+E)
-
-		label_gerar = Label(self.__frame_operacoes_af, text="Gerar sentenças de tamanho: ", pady=padding)
-		self.__configura_elemento(label_gerar, row=3, column=0, rowweight=1, columnweight=0, sticky=W)
-
-		f = Frame(self.__frame_operacoes_af, padx=padding)
-		self.__configura_elemento(f, row=3, column=1, rowweight=0, columnweight=0, sticky=W+E)
-		entry_tamanho = Entry(f, textvariable=self.__string_tamanho_enumerados)
-		self.__configura_elemento(entry_tamanho)
-
-		button_reconhecer = Button(self.__frame_operacoes_af, text="Gerar", command=self.cb_enumera_sentencas)
-		self.__configura_elemento(button_reconhecer, row=3, column=2, rowweight=0, columnweight=0, sticky=W+E)
-
-		self.__frame_operacoes_af.grid_columnconfigure(1, minsize=200)
-		'''
-
 	def __inicializa_tela_sem_selecionado(self):
 		f = Frame(self.__frame_elemento_nulo)
 		f.pack(expand=True)
-		label = Label(f, text="Você não possui nenhum elemento selecionado\n"
-							  "Crie um novo no painel à esquerda ou selecione um já criado")
+		label = Label(f, text="Você não possui nenhuma GLC selecionada\n"
+							  "Crie uma nova no painel à esquerda ou selecione uma já criada")
 		label.pack()
 
 	def __estado_botoes_da_lista(self, estado=True):
@@ -378,7 +292,7 @@ class View:
 
 	def __atualiza_visualizacao_do_elemento(self, nome, tipo, representacao):
 		self.__label_nome_display['text'] = nome
-		self.__label_tipo_display['text'] = tipo
+		#self.__label_tipo_display['text'] = tipo
 		self.__text_visualizacao.configure(state='normal')
 		self.__text_visualizacao.delete("1.0", END)
 		self.__text_visualizacao.insert(END, representacao)
@@ -549,17 +463,3 @@ class View:
 		indice_selecionado = self.__get_indice_selecionado()
 		passos = self.__string_n_passos.get()
 		self.__controller.cb_propriedade_fatoravel(indice_selecionado, passos)
-
-	def cb_salvar(self):
-		if self.__get_indice_selecionado() is not None:
-			self.__controller.cb_salvar_elemento(self.__get_indice_selecionado())
-		else:
-			self.mostrar_aviso("Você precisa selecionar um elemento para salvá-lo.")
-
-	def cb_carregar_gr(self):
-		caminho = self.carregar_arquivo()
-		self.__controller.cb_carregar_gr(caminho)
-
-	def cb_carregar_er(self):
-		caminho = self.carregar_arquivo()
-		self.__controller.cb_carregar_er(caminho)
