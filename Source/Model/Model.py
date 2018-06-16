@@ -84,10 +84,10 @@ class Model:
             except OperacaoError as e:
                 propria = [gramatica]
 
-            sem_recursao = propria[-1].remove_recursao_esq()
+            sem_recursao, recursoes = propria[-1].remove_recursao_esq()
             resultantes.append(sem_recursao)
 
-            return resultantes
+            return resultantes, recursoes
 
     '''
         Método que transforma uma gramática em própria

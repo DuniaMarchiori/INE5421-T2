@@ -97,7 +97,8 @@ class Controller:
 	def cb_operacao_remover_recursao_esq(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			glcs_criadas = self.__model.remover_recursao(elemento)
+			# TODO ver como vai mostrar as recursoes
+			glcs_criadas, recursoes = self.__model.remover_recursao(elemento)
 			self.__adicionar_multiplos_elementos(glcs_criadas)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())

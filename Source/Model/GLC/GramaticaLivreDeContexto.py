@@ -117,7 +117,10 @@ class GramaticaLivreDeContexto(Elemento):
 			pass
 			# TODO
 			# Fazer:
-			#   - Cria uma nova GLC sem recursão à esquerda usando o algoritmo e retorna ela.
+			#   - Obter quais não terminais possuem recursão à esquerda e pra cada um, se são recursões diretas ou indiretas
+			#       - Essa estrutura pode ser um dicionário, onde as chaves são os não terminais e o valor é o tipo da recursividade
+			#   - Cria uma nova GLC sem recursão à esquerda usando o algoritmo.
+			#   - Retorna a GLC e também a estrutura dos terminais que possuem recursão
 
 	def existe_recursao_esq(self):
 		pass
