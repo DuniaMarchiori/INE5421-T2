@@ -5,6 +5,7 @@ from Source.View.View import View
 
 from Source.Model.GLC.Artifacts.Exceptions.ParsingError import *
 from Source.Model.Exceptions.OperacaoError import *
+from Source.Model.Exceptions.VnError import *
 
 '''
 	Controller do padrão MVC.
@@ -110,8 +111,8 @@ class Controller:
 	def cb_operacao_propria(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO alterar o retorno, deve retornar: as GLCs criadas e Ne NA NF Vi
-			glcs_criadas = self.__model.transformar_em_propria(elemento)
+			# TODO ver como vai mostrar os conjuntos
+			glcs_criadas, conjuntos = self.__model.transformar_em_propria(elemento)
 			self.__adicionar_multiplos_elementos(glcs_criadas)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -125,8 +126,8 @@ class Controller:
 	def cb_operacao_epsilon(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO alterar o retorno, deve retornar: a GLC criada e Ne
-			glc_criada = self.__model.transformar_epsilon_livre(elemento)
+			# TODO ver como vai mostrar o conjunto
+			glc_criada, conjuntos = self.__model.transformar_epsilon_livre(elemento)
 			self.__adicionar_unico_elemento(glc_criada)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -140,7 +141,7 @@ class Controller:
 	def cb_operacao_simples(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO alterar o retorno, deve retornar: a GLC criada e NA (é NA o nome do conjunto dessa operacao?)
+			# TODO ver como vai mostrar o conjunto
 			glc_criada = self.__model.remover_simples(elemento)
 			self.__adicionar_multiplos_elementos(glc_criada)
 		except OperacaoError as e:
@@ -155,7 +156,7 @@ class Controller:
 	def cb_operacao_inuteis(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO alterar o retorno, deve retornar: as GLCs criadas e NF Vi (NF é o conjunto dos inférteis mesmo?)
+			# TODO ver como vai mostrar os conjuntos
 			glcs_criadas = self.__model.remover_inuteis(elemento)
 			self.__adicionar_multiplos_elementos(glcs_criadas)
 		except OperacaoError as e:
@@ -170,7 +171,7 @@ class Controller:
 	def cb_operacao_inferteis(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO alterar o retorno, deve retornar: a GLC criada e NF (é NF o nome do conjunto dessa operacao?)
+			# TODO ver como vai mostrar o conjunto
 			glc_criada = self.__model.remover_inferteis(elemento)
 			self.__adicionar_multiplos_elementos(glc_criada)
 		except OperacaoError as e:
@@ -185,7 +186,7 @@ class Controller:
 	def cb_operacao_inalcancaveis(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO alterar o retorno, deve retornar: a GLC criada e Vi
+			# TODO ver como vai mostrar o conjunto
 			glc_criada = self.__model.remover_inalcancaveis(elemento)
 			self.__adicionar_multiplos_elementos(glc_criada)
 		except OperacaoError as e:
@@ -222,7 +223,8 @@ class Controller:
 		try:
 			first = self.__model.calcular_first(elemento, vn)
 			self.__view.mostrar_aviso("O First de " + vn + " é: {" + ', '.join(first) + "}", titulo="First")
-		# TODO adicionar except para o caso do simbolo dado não ser um Vn
+		except VnError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
 
@@ -236,7 +238,8 @@ class Controller:
 		try:
 			follow = self.__model.calcular_follow(elemento, vn)
 			self.__view.mostrar_aviso("O Follow de " + vn + " é: {" + ', '.join(follow) + "}", titulo="Follow")
-		# TODO adicionar except para o caso do simbolo dado não ser um Vn
+		except VnError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
 
@@ -250,7 +253,8 @@ class Controller:
 		try:
 			first_nt = self.__model.calcular_first_nt(elemento, vn)
 			self.__view.mostrar_aviso("O First-NT de " + vn + " é: {" + ', '.join(first_nt) + "}", titulo="First-NT")
-		# TODO adicionar except para o caso do simbolo dado não ser um Vn
+		except VnError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
 

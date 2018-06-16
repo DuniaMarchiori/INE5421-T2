@@ -4,7 +4,9 @@ from Source.Model.Elemento import *
 from Source.Model.ListaElementos import *
 from Source.Model.GLC.GramaticaLivreDeContexto import *
 from Source.Model.FileManager.FileManager import *
+
 from Source.Model.Exceptions.OperacaoError import *
+from Source.Model.Exceptions.VnError import *
 
 from copy import deepcopy
 
@@ -72,7 +74,7 @@ class Model:
     '''
     def remover_recursao(self, gramatica):
         if not gramatica.existe_recursao_esq():
-            raise OperacaoError("a gramática não possúi nenhuma recursão à esquerda")
+            raise OperacaoError(" a gramática não possúi nenhuma recursão à esquerda")
         else:
             resultantes = []
 
@@ -92,7 +94,7 @@ class Model:
     '''
     def transformar_em_propria(self, gramatica):
         if gramatica.eh_propria():
-            raise OperacaoError("a gramática já é própria")
+            raise OperacaoError(" a gramática já é própria")
         else:
             resultantes = []
             conjuntos = []
@@ -122,7 +124,7 @@ class Model:
     '''
     def transformar_epsilon_livre(self, gramatica):
         if gramatica.eh_epsilon_livre():
-            raise OperacaoError("a gramática já é epsilon-livre")
+            raise OperacaoError(" a gramática já é epsilon-livre")
         else:
             nova_gramatica, ne = gramatica.transforma_epsilon_livre()
             return nova_gramatica, ne
@@ -135,7 +137,7 @@ class Model:
     '''
     def remover_simples(self, gramatica):
         if not gramatica.existe_producoes_simples():
-            raise OperacaoError("a gramática não possúi produções simples")
+            raise OperacaoError(" a gramática não possúi produções simples")
         else:
             nova_gramatica, na = gramatica.remove_simples()
             return nova_gramatica, na
@@ -148,7 +150,7 @@ class Model:
     '''
     def remover_inuteis(self, gramatica):
         if not gramatica.existem_inuteis():
-            raise OperacaoError("a gramática não possúi produções inúteis")
+            raise OperacaoError(" a gramática não possúi produções inúteis")
         else:
             resultantes = []
             conjuntos = []
@@ -172,7 +174,7 @@ class Model:
     '''
     def remover_inferteis(self, gramatica):
         if not gramatica.existe_inferteis():
-            raise OperacaoError("agramática não possúi produções inférteis")
+            raise OperacaoError(" a gramática não possúi produções inférteis")
         else:
             nova_gramatica, nf = gramatica.remove_inferteis()
             return nova_gramatica, nf
@@ -185,7 +187,7 @@ class Model:
     '''
     def remover_inalcancaveis(self, gramatica):
         if not gramatica.existe_inalcancavel():
-            raise OperacaoError("a gramática não possúi produções inalcançáveis")
+            raise OperacaoError(" a gramática não possúi produções inalcançáveis")
         else:
             nova_gramatica, vi = gramatica.remove_inalcancaveis()
             return nova_gramatica, vi
@@ -205,8 +207,14 @@ class Model:
         \:param vn é o simbolo pertencente à Vn cujo First será calculado.
     '''
     def calcular_first(self, gramatica, vn):
-        obj_vn = None
-        # obj_vn = Vn(vn) TODO
+        try:
+            obj_vn = Vn(vn)
+        except:
+            raise VnError("Símbolo fornecido não é um símbolo de Vn válido.")
+
+        if not gramatica.vn_pertence(obj_vn):
+            raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
+
         return gramatica.first(obj_vn)
 
     '''
@@ -215,8 +223,14 @@ class Model:
         \:param vn é o simbolo pertencente à Vn cujo Follow será calculado.
     '''
     def calcular_follow(self, gramatica, vn):
-        obj_vn = None
-        # obj_vn = Vn(vn) TODO
+        try:
+            obj_vn = Vn(vn)
+        except:
+            raise VnError("Símbolo fornecido não é um símbolo de Vn válido.")
+
+        if not gramatica.vn_pertence(obj_vn):
+            raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
+
         return gramatica.follow(obj_vn)
 
     '''
@@ -225,8 +239,14 @@ class Model:
         \:param vn é o simbolo pertencente à Vn cujo First-NT será calculado.
     '''
     def calcular_first_nt(self, gramatica, vn):
-        obj_vn = None
-        # obj_vn = Vn(vn) TODO
+        try:
+            obj_vn = Vn(vn)
+        except:
+            raise VnError("Símbolo fornecido não é um símbolo de Vn válido.")
+
+        if not gramatica.vn_pertence(obj_vn):
+            raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
+
         return gramatica.first_nt(obj_vn)
 
     '''

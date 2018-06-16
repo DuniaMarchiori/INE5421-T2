@@ -79,36 +79,16 @@ class GramaticaLivreDeContexto(Elemento):
 			unidades_resultantes = []
 			for unidade in unidades_encontradas:
 				unidade = unidade.strip()
-				tipo = -1
-				for simbolo in unidade:
-					if tipo == -1:
-						if simbolo in alfabeto_nao_terminais_inicial:
-							tipo = 0
-						elif simbolo in alfabeto_terminais:
-							tipo = 1
-						elif simbolo == epsilon:
-							tipo = 2
-					elif tipo == 0:
-						if simbolo not in alfabeto_nao_terminais_seguintes:
-							raise ParsingError(": símbolo inesperado na sintaxe de um não terminal na linha " + str(linha))
-					elif tipo == 1:
-						if simbolo not in alfabeto_terminais:
-							raise ParsingError(": símbolo inesperado na sintaxe de um terminal na linha " + str(linha))
-					elif tipo == 2:
-						raise ParsingError(": símbolo inesperado após o símbolo & na linha " + str(linha))
-
-				if tipo == 0:
-					vn = Vn(unidade)
-					unidades_resultantes.append(vn)
-					self.__nao_terminais.add(vn)
-				elif tipo == 1 or tipo == 2:
-					vt = Vt(unidade)
-					unidades_resultantes.append(vt)
-					if tipo != 2:
-						self.__terminais.add(vt)
-				else:
-					raise ParsingError(": símbolo de Vt ou Vn esperado mas não encontrado na linha " + str(linha))
-
+				primeiro_simbolo = unidade[0]
+				try:
+					if primeiro_simbolo in alfabeto_nao_terminais_inicial:
+						unidades_resultantes.append(Vn(unidade))
+					elif primeiro_simbolo in (alfabeto_terminais + epsilon):
+						unidades_resultantes.append(Vt(unidade))
+					else:
+						raise ParsingError(": símbolo de Vt ou Vn esperado mas não encontrado")
+				except ParsingError as e:
+					raise ParsingError(e.get_message() + " na linha " + str(linha))
 			producoes_resultantes.append(Producao(vn, unidades_resultantes))
 		return producoes_resultantes
 
@@ -117,12 +97,19 @@ class GramaticaLivreDeContexto(Elemento):
 			self.__conjunto_producoes[vn] = []
 		self.__conjunto_producoes[vn].append(producao)
 
+	def vn_pertence(self, vn):
+		return vn in self.__nao_terminais
+
+	def vt_pertence(self, vt):
+		return vt in self.__terminais
+
 	def remove_recursao_esq(self):
 		if self.existe_recursao_esq():
-			raise OperacaoError("A gramática não possúi recursão à esquerda")
-		if not self.eh_propria():
-			raise OperacaoError("A gramática não é própria")
+			raise OperacaoError(" a gramática não possúi recursão à esquerda")
+		elif not self.eh_propria():
+			raise OperacaoError(" a gramática não é própria")
 		else:
+			print()
 			pass
 			# TODO
 			# Fazer:
@@ -136,12 +123,14 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def transforma_epsilon_livre(self):
 		if self.eh_epsilon_livre():
-			raise OperacaoError("A gramática já é epsilon-livre")
+			raise OperacaoError(" a gramática já é epsilon-livre")
 		else:
 			pass
 			# TODO
 			# Fazer:
-			#   - Cria uma nova GLC epsilon-livre usando o algoritmo e retorna ela.
+			#   - Cria o conjunto Ne
+			#   - Cria uma nova GLC epsilon-livre usando o algoritmo.
+			#   - Retorna a gramática e o conjunto, nessa ordem
 
 	def eh_epsilon_livre(self):
 		pass
@@ -151,12 +140,15 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def remove_simples(self):
 		if not self.existe_producoes_simples():
-			raise OperacaoError("A gramática não possúi nenhuma produção simples")
+			raise OperacaoError(" a gramática não possúi nenhuma produção simples")
 		else:
 			pass
 			# TODO
 			# Fazer:
-			#   - Cria uma nova GLC sem produções simples usando o algoritmo e retorna ela.
+			#   - Cria os conjuntos NA
+			#       - Esses NA podem ser representados por um dicionário em que cada chave 'x' é o conjunto Nx por exemplo
+			#   - Cria uma nova GLC sem produções simples usando o algoritmo.
+			#   - Retorna a gramática e os conjuntos, nessa ordem
 
 	def existe_producoes_simples(self):
 		pass
@@ -166,12 +158,14 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def remove_inferteis(self):
 		if not self.existe_inferteis():
-			raise OperacaoError("A gramática não possúi nenhuma produção infértil")
+			raise OperacaoError(" a gramática não possúi nenhuma produção infértil")
 		else:
 			pass
 			# TODO
 			# Fazer:
-			#   - Cria uma nova GLC sem produções inférteis usando o algoritmo e retorna ela.
+			#   - Cria o conjunto NF
+			#   - Cria uma nova GLC sem produções inférteis usando o algoritmo.
+			#   - Retorna a gramática e o conjunto, nessa ordem
 
 	def existe_inferteis(self):
 		pass
@@ -181,12 +175,14 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def remove_inalcancaveis(self):
 		if not self.existe_inalcancavel():
-			raise OperacaoError("A gramática não possúi nenhuma produção inalcançável")
+			raise OperacaoError(" a gramática não possúi nenhuma produção inalcançável")
 		else:
 			pass
 			# TODO
 			# Fazer:
-			#   - Cria uma nova GLC sem produções inalcançáveis usando o algoritmo e retorna ela.
+			#   - Cria o conjunto Vi
+			#   - Cria uma nova GLC sem produções inalcançáveis usando o algoritmo.
+			#   - Retorna a gramática e o conjunto, nessa ordem
 
 	def existe_inalcancavel(self):
 		pass
