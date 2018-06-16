@@ -111,7 +111,7 @@ class Controller:
 	def cb_operacao_propria(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar os conjuntos
+			# TODO ver como vai mostrar os conjuntos (ne, na, nf e vi)
 			glcs_criadas, conjuntos = self.__model.transformar_em_propria(elemento)
 			self.__adicionar_multiplos_elementos(glcs_criadas)
 		except OperacaoError as e:
@@ -126,8 +126,8 @@ class Controller:
 	def cb_operacao_epsilon(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar o conjunto
-			glc_criada, conjuntos = self.__model.transformar_epsilon_livre(elemento)
+			# TODO ver como vai mostrar o conjunto (ne)
+			glc_criada, ne = self.__model.transformar_epsilon_livre(elemento)
 			self.__adicionar_unico_elemento(glc_criada)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -141,8 +141,8 @@ class Controller:
 	def cb_operacao_simples(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar o conjunto
-			glc_criada = self.__model.remover_simples(elemento)
+			# TODO ver como vai mostrar o conjunto (na)
+			glc_criada, na = self.__model.remover_simples(elemento)
 			self.__adicionar_multiplos_elementos(glc_criada)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -156,8 +156,8 @@ class Controller:
 	def cb_operacao_inuteis(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar os conjuntos
-			glcs_criadas = self.__model.remover_inuteis(elemento)
+			# TODO ver como vai mostrar os conjuntos (nf e vi)
+			glcs_criadas, conjuntos = self.__model.remover_inuteis(elemento)
 			self.__adicionar_multiplos_elementos(glcs_criadas)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -171,8 +171,8 @@ class Controller:
 	def cb_operacao_inferteis(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar o conjunto
-			glc_criada = self.__model.remover_inferteis(elemento)
+			# TODO ver como vai mostrar o conjunto (nf)
+			glc_criada, nf = self.__model.remover_inferteis(elemento)
 			self.__adicionar_multiplos_elementos(glc_criada)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -186,8 +186,8 @@ class Controller:
 	def cb_operacao_inalcancaveis(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar o conjunto
-			glc_criada = self.__model.remover_inalcancaveis(elemento)
+			# TODO ver como vai mostrar o conjunto (vi)
+			glc_criada, vi = self.__model.remover_inalcancaveis(elemento)
 			self.__adicionar_multiplos_elementos(glc_criada)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
