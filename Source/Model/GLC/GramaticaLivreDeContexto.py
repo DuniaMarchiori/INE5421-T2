@@ -82,9 +82,13 @@ class GramaticaLivreDeContexto(Elemento):
 				primeiro_simbolo = unidade[0]
 				try:
 					if primeiro_simbolo in alfabeto_nao_terminais_inicial:
-						unidades_resultantes.append(Vn(unidade))
+						vn = Vn(unidade)
+						unidades_resultantes.append(vn)
+						self.__nao_terminais.add(vn)
 					elif primeiro_simbolo in (alfabeto_terminais + epsilon):
-						unidades_resultantes.append(Vt(unidade))
+						vt = Vt(unidade)
+						unidades_resultantes.append(vt)
+						self.__terminais.add(vt)
 					else:
 						raise ParsingError(": símbolo de Vt ou Vn esperado mas não encontrado")
 				except ParsingError as e:
@@ -94,8 +98,8 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def adiciona_producao(self, vn, producao):
 		if vn not in self.__conjunto_producoes:
-			self.__conjunto_producoes[vn] = []
-		self.__conjunto_producoes[vn].append(producao)
+			self.__conjunto_producoes[vn] = set()
+		self.__conjunto_producoes[vn].add(producao)
 
 	def vn_pertence(self, vn):
 		return vn in self.__nao_terminais
@@ -128,8 +132,8 @@ class GramaticaLivreDeContexto(Elemento):
 			pass
 			# TODO
 			# Fazer:
-			#   - Cria o conjunto Ne
-			#   - Cria uma nova GLC epsilon-livre usando o algoritmo.
+			#   - Obtem o conjunto Ne com o método self.obtem_ne()
+			#   - Cria uma nova GLC epsilon-livre usando o algoritmo com base no conjunto.
 			#   - Retorna a gramática e o conjunto, nessa ordem
 
 	def eh_epsilon_livre(self):
@@ -138,6 +142,12 @@ class GramaticaLivreDeContexto(Elemento):
 		# Deve:
 		#   - Verificar se é &-livre (retorna True ou False)
 
+	def obtem_ne(self):
+		pass
+		# TODO
+		# Deve:
+		#   - Retornar o conjunto Ne utilizado no método de transformação em &-livre
+
 	def remove_simples(self):
 		if not self.existe_producoes_simples():
 			raise OperacaoError(" a gramática não possúi nenhuma produção simples")
@@ -145,16 +155,23 @@ class GramaticaLivreDeContexto(Elemento):
 			pass
 			# TODO
 			# Fazer:
-			#   - Cria os conjuntos NA
-			#       - Esses NA podem ser representados por um dicionário em que cada chave 'x' é o conjunto Nx por exemplo
-			#   - Cria uma nova GLC sem produções simples usando o algoritmo.
+			#   - Obtem os conjuntos NA com o método self.obtem_na()
+			#   - Cria uma nova GLC sem produções simples usando o algoritmo, com base nos conjuntos.
 			#   - Retorna a gramática e os conjuntos, nessa ordem
 
 	def existe_producoes_simples(self):
+		for vn in self.__conjunto_producoes:
+			for derivacao in self.__conjunto_producoes[vn]:
+				if derivacao.eh_simples():
+					return True
+		return False
+
+	def obtem_na(self):
 		pass
 		# TODO
 		# Deve:
-		#   - Verificar se existem produções simples (retorna True ou False)
+		#   - Retornar os conjuntos NA pra cada A E Vn, utilizados no método de remoção de produções simples
+		#       - Esses NA podem ser representados por um dicionário em que cada chave 'x' é o conjunto Nx por exemplo
 
 	def remove_inferteis(self):
 		if not self.existe_inferteis():
@@ -163,8 +180,8 @@ class GramaticaLivreDeContexto(Elemento):
 			pass
 			# TODO
 			# Fazer:
-			#   - Cria o conjunto NF
-			#   - Cria uma nova GLC sem produções inférteis usando o algoritmo.
+			#   - Obtem o conjunto NF com o método self.obtem_nf()
+			#   - Cria uma nova GLC sem produções inférteis usando o algoritmo, com base no conjunto.
 			#   - Retorna a gramática e o conjunto, nessa ordem
 
 	def existe_inferteis(self):
@@ -173,6 +190,12 @@ class GramaticaLivreDeContexto(Elemento):
 		# Deve:
 		#   - Verificar se existem produções inférteis (retorna True ou False)
 
+	def obtem_nf(self):
+		pass
+		# TODO
+		# Deve:
+		#   - Retornar o conjunto NF utilizado no método de remoção de inférteis
+
 	def remove_inalcancaveis(self):
 		if not self.existe_inalcancavel():
 			raise OperacaoError(" a gramática não possúi nenhuma produção inalcançável")
@@ -180,8 +203,8 @@ class GramaticaLivreDeContexto(Elemento):
 			pass
 			# TODO
 			# Fazer:
-			#   - Cria o conjunto Vi
-			#   - Cria uma nova GLC sem produções inalcançáveis usando o algoritmo.
+			#   - Obtem o conjunto Vi com o método self.obtem_vi()
+			#   - Cria uma nova GLC sem produções inalcançáveis usando o algoritmo, com base no conjunto.
 			#   - Retorna a gramática e o conjunto, nessa ordem
 
 	def existe_inalcancavel(self):
@@ -189,6 +212,12 @@ class GramaticaLivreDeContexto(Elemento):
 		# TODO
 		# Deve:
 		#   - Verificar se existem produções inalcancaveis (retorna True ou False)
+
+	def obtem_vi(self):
+		pass
+		# TODO
+		# Deve:
+		#   - Retornar o conjunto Vi utilizado no método de remoção de inalcançáveis
 
 	def existem_inuteis(self):
 		return self.existe_inferteis() or self.existe_inalcancavel()
@@ -204,21 +233,21 @@ class GramaticaLivreDeContexto(Elemento):
 		# Deve:
 		#   - Retornar 0 se for vazia, 1 se for finita ou 2 se for infinita (Fazer assim primeiro, se sobrar tempo podemos fazer um enum mais bonito)
 
-	def first(self, vn):
+	def first(self, simb):
 		pass
 		# TODO
 		# Deve:
 		#   - Verificar se vn pertence à Vn
 		#   - Retornar o conjunto de First de vn
 
-	def follow(self, vn):
+	def follow(self, simb):
 		pass
 		# TODO
 		# Deve:
 		#   - Verificar se vn pertence à Vn
 		#   - Retornar o conjunto de Follow de vn
 
-	def first_nt(self, vn):
+	def first_nt(self, simb):
 		pass
 		# TODO
 		# Deve:
@@ -226,10 +255,13 @@ class GramaticaLivreDeContexto(Elemento):
 		#   - Retornar o conjunto de First-NT de vn
 
 	def esta_fatorada(self):
-		pass
-		# TODO
-		# Deve:
-		#   - Verificar se a gramática está fatorada (da pra utilizar o First)
+		for vn in self.__conjunto_producoes:
+			firsts_das_derivacoes = set()
+			for derivacao in self.__conjunto_producoes[vn]:
+				first_dessa_derivacao = self.first(str(derivacao))
+				if firsts_das_derivacoes & first_dessa_derivacao:  # intersecção não é nula:
+					return False
+		return True
 
 	def eh_fatoravel_em_n_passos(self, n):
 		pass

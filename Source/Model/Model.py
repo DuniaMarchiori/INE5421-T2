@@ -78,8 +78,11 @@ class Model:
         else:
             resultantes = []
 
-            propria, conjuntos = self.transformar_em_propria(gramatica)
-            resultantes.extend(propria)
+            try:
+                propria, conjuntos = self.transformar_em_propria(gramatica)
+                resultantes.extend(propria)
+            except OperacaoError as e:
+                propria = [gramatica]
 
             sem_recursao = propria[-1].remove_recursao_esq()
             resultantes.append(sem_recursao)
@@ -99,17 +102,29 @@ class Model:
             resultantes = []
             conjuntos = []
 
-            epsilon_livre, ne = self.transformar_epsilon_livre(gramatica)
-            resultantes.append(epsilon_livre)
-            conjuntos.append(ne)
+            try:
+                epsilon_livre, ne = self.transformar_epsilon_livre(gramatica)
+                resultantes.append(epsilon_livre)
+                conjuntos.append(ne)
+            except OperacaoError as e:
+                epsilon_livre = gramatica
+                conjuntos.append(epsilon_livre.obtem_ne())
 
-            sem_simples, na = self.remover_simples(epsilon_livre)
-            resultantes.append(sem_simples)
-            conjuntos.append(na)
+            try:
+                sem_simples, na = self.remover_simples(epsilon_livre)
+                resultantes.append(sem_simples)
+                conjuntos.append(na)
+            except OperacaoError as e:
+                sem_simples = epsilon_livre
+                conjuntos.append(sem_simples.obtem_na())
 
-            sem_inuteis, nf_vi = self.remover_inuteis(sem_simples)
-            resultantes.extend(sem_inuteis)
-            conjuntos.extend(nf_vi)
+            try:
+                sem_inuteis, nf_vi = self.remover_inuteis(sem_simples)
+                resultantes.extend(sem_inuteis)
+                conjuntos.extend(nf_vi)
+            except OperacaoError as e:
+                sem_inuteis = [sem_simples]
+                conjuntos.extend([sem_simples.obtem_nf(), sem_simples.obtem_vi()])
 
             propria = sem_inuteis[-1]
             propria.set_nome(gramatica.get_nome() + " (própria)")
@@ -155,14 +170,23 @@ class Model:
             resultantes = []
             conjuntos = []
 
-            sem_infertil, nf = self.remover_inferteis(gramatica)
-            resultantes.append(sem_infertil)
-            conjuntos.append(nf)
+            try:
+                sem_infertil, nf = self.remover_inferteis(gramatica)
+                resultantes.append(sem_infertil)
+                conjuntos.append(nf)
+            except OperacaoError as e:
+                sem_infertil = gramatica
+                conjuntos.append(sem_infertil.obtem_nf())
 
-            sem_inalcancavel, vi = self.remover_inalcancaveis(sem_infertil)
+            try:
+                sem_inalcancavel, vi = self.remover_inalcancaveis(sem_infertil)
+                conjuntos.append(vi)
+            except OperacaoError as e:
+                sem_inalcancavel = sem_infertil
+                conjuntos.append(sem_inalcancavel.obtem_vi())
+
             sem_inalcancavel.set_nome(gramatica.get_nome() + " (sem inúteis)")
             resultantes.append(sem_inalcancavel)
-            conjuntos.append(vi)
 
             return resultantes, conjuntos
 
@@ -207,6 +231,7 @@ class Model:
         \:param vn é o simbolo pertencente à Vn cujo First será calculado.
     '''
     def calcular_first(self, gramatica, vn):
+        obj_vn = None
         try:
             obj_vn = Vn(vn)
         except:
@@ -215,7 +240,7 @@ class Model:
         if not gramatica.vn_pertence(obj_vn):
             raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
 
-        return gramatica.first(obj_vn)
+        return gramatica.first(vn)
 
     '''
         Método que calcula o Follow de um Vn qualquer de uma gramática.
@@ -223,6 +248,7 @@ class Model:
         \:param vn é o simbolo pertencente à Vn cujo Follow será calculado.
     '''
     def calcular_follow(self, gramatica, vn):
+        obj_vn = None
         try:
             obj_vn = Vn(vn)
         except:
@@ -231,7 +257,7 @@ class Model:
         if not gramatica.vn_pertence(obj_vn):
             raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
 
-        return gramatica.follow(obj_vn)
+        return gramatica.follow(vn)
 
     '''
         Método que calcula o First-NT de um Vn qualquer de uma gramática.
@@ -239,6 +265,7 @@ class Model:
         \:param vn é o simbolo pertencente à Vn cujo First-NT será calculado.
     '''
     def calcular_first_nt(self, gramatica, vn):
+        obj_vn = None
         try:
             obj_vn = Vn(vn)
         except:
@@ -247,7 +274,7 @@ class Model:
         if not gramatica.vn_pertence(obj_vn):
             raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
 
-        return gramatica.first_nt(obj_vn)
+        return gramatica.first_nt(vn)
 
     '''
         Método que verifica se uma gramática está fatorada.
