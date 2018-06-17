@@ -61,8 +61,7 @@ class Model:
         \:param entrada é a representação textual da gramática.
     '''
     def criar_gramatica(self, nome, entrada):
-        glc = GramaticaLivreDeContexto(nome)
-        glc.parse(entrada)
+        glc = GramaticaLivreDeContexto(nome, entrada)
         return glc
 
     # Operações

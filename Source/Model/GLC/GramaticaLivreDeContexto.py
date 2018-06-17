@@ -16,14 +16,15 @@ import re
 '''
 class GramaticaLivreDeContexto(Elemento):
 
-	def __init__(self, nome):
+	def __init__(self, nome, entrada):
 		super(GramaticaLivreDeContexto, self).__init__(TipoElemento.GLC, nome)
 		self.__conjunto_producoes = OrderedDict()
 		self.__terminais = set()
 		self.__nao_terminais = set()
 		self.__vn_inicial = None
+		self.__parse(entrada)
 
-	def parse(self, entrada):
+	def __parse(self, entrada):
 		inicial_definido = False
 		entrada_linhas = entrada.splitlines()
 		num_linha = 0
@@ -39,7 +40,7 @@ class GramaticaLivreDeContexto(Elemento):
 							inicial_definido = True
 						producoes = self.__obtem_producoes(produtor, producao_lista[1], num_linha)
 						for producao in producoes:
-							self.adiciona_producao(produtor, producao)
+							self.__adiciona_producao(produtor, producao)
 					else:
 						raise ParsingError(": símbolo de derivação (" + simb_derivacao + ") encontrado múltiplas vezes na linha " + str(num_linha))
 				else:
@@ -96,7 +97,7 @@ class GramaticaLivreDeContexto(Elemento):
 			producoes_resultantes.append(Producao(vn, unidades_resultantes))
 		return producoes_resultantes
 
-	def adiciona_producao(self, vn, producao):
+	def __adiciona_producao(self, vn, producao):
 		if vn not in self.__conjunto_producoes:
 			self.__conjunto_producoes[vn] = set()
 		self.__conjunto_producoes[vn].add(producao)
@@ -117,6 +118,7 @@ class GramaticaLivreDeContexto(Elemento):
 			pass
 			# TODO
 			# Fazer:
+			#   - (Lembrete: Utilizar classe GLCEditavel pra construir a GLC resultante)
 			#   - Obter quais não terminais possuem recursão à esquerda e pra cada um, se são recursões diretas ou indiretas
 			#       - Essa estrutura pode ser um dicionário, onde as chaves são os não terminais e o valor é o tipo da recursividade
 			#   - Cria uma nova GLC sem recursão à esquerda usando o algoritmo.
@@ -135,6 +137,7 @@ class GramaticaLivreDeContexto(Elemento):
 			pass
 			# TODO
 			# Fazer:
+			#   - (Lembrete: Utilizar classe GLCEditavel pra construir a GLC resultante)
 			#   - Obtem o conjunto Ne com o método self.obtem_ne()
 			#   - Cria uma nova GLC epsilon-livre usando o algoritmo com base no conjunto.
 			#   - Retorna a gramática e o conjunto, nessa ordem
@@ -158,6 +161,7 @@ class GramaticaLivreDeContexto(Elemento):
 			pass
 			# TODO
 			# Fazer:
+			#   - (Lembrete: Utilizar classe GLCEditavel pra construir a GLC resultante)
 			#   - Obtem os conjuntos NA com o método self.obtem_na()
 			#   - Cria uma nova GLC sem produções simples usando o algoritmo, com base nos conjuntos.
 			#   - Retorna a gramática e os conjuntos, nessa ordem
@@ -183,6 +187,7 @@ class GramaticaLivreDeContexto(Elemento):
 			pass
 			# TODO
 			# Fazer:
+			#   - (Lembrete: Utilizar classe GLCEditavel pra construir a GLC resultante)
 			#   - Obtem o conjunto NF com o método self.obtem_nf()
 			#   - Cria uma nova GLC sem produções inférteis usando o algoritmo, com base no conjunto.
 			#   - Retorna a gramática e o conjunto, nessa ordem
@@ -206,6 +211,7 @@ class GramaticaLivreDeContexto(Elemento):
 			pass
 			# TODO
 			# Fazer:
+			#   - (Lembrete: Utilizar classe GLCEditavel pra construir a GLC resultante)
 			#   - Obtem o conjunto Vi com o método self.obtem_vi()
 			#   - Cria uma nova GLC sem produções inalcançáveis usando o algoritmo, com base no conjunto.
 			#   - Retorna a gramática e o conjunto, nessa ordem
@@ -270,7 +276,9 @@ class GramaticaLivreDeContexto(Elemento):
 		pass
 		# TODO
 		# Deve:
+		#   - (Lembrete: Utilizar classe GLCEditavel pra construir cada passo da GLC durante a fatoração)
 		#   - Tentar fatorar em no máximo n passos
+		#   - Só precisa retornar True ou False por enquanto
 
 	def to_string(self):
 		return self.__str__()
@@ -287,3 +295,6 @@ class GramaticaLivreDeContexto(Elemento):
 			else:
 				retorno += linha
 		return retorno
+
+# Imports colocados abaixo para contornar dependência circular
+from Source.Model.GLC.Artifacts.GLCEditavel import GLCEditavel
