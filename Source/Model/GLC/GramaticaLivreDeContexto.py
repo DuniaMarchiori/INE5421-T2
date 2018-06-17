@@ -23,7 +23,7 @@ class GramaticaLivreDeContexto(Elemento):
 		self.__nao_terminais = set()
 		self.__vn_inicial = None
 		self.__parse(entrada)
-		self.nf = None
+		self.__nf = None
 
 	def __parse(self, entrada):
 		inicial_definido = False
@@ -195,16 +195,16 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def existe_inferteis(self):
 		nf = self.obtem_nf()
-		return nf != set()
+		return bool(self.__nao_terminais.difference(nf)) # Retorna falso se a diferença resulta em um conjunto vazio
 
 	def obtem_nf(self):
-		if self.nf != None:
-			return self.nf
+		if self.__nf != None:
+			return self.__nf
 
 		nf = set()
 		nf_atual = set()
 		continua = True
-		nt = set(self.__conjunto_producoes)
+		nt = set(self.__nao_terminais)
 
 		while continua:
 			nf = set(nf_atual)
@@ -226,8 +226,8 @@ class GramaticaLivreDeContexto(Elemento):
 			nt = nt - nf_atual
 			continua = (nf != nf_atual)
 
-		self.nf = nf
-		return self.nf
+		self.__nf = nf
+		return self.__nf
 
 
 	def remove_inalcancaveis(self):
@@ -279,7 +279,8 @@ class GramaticaLivreDeContexto(Elemento):
 			producoes = self.__conjunto_producoes[A]
 			for x in producoes:
 				prod = x.get_derivacao()
-				if A in prod:
+				contem_terminal = any(simbolo in self.__terminais for simbolo in prod)
+				if A in prod and contem_terminal:
 					return True
 
 				prox_deriv = set(self.__nao_terminais.intersection(set(prod)))
@@ -290,7 +291,8 @@ class GramaticaLivreDeContexto(Elemento):
 						producoes = self.__conjunto_producoes[y]
 						for z in producoes:
 							prod = z.get_derivacao()
-							if A in prod:
+							contem_terminal = contem_terminal or any(simbolo in self.__terminais for simbolo in prod)
+							if A in prod and contem_terminal:
 								return True
 					prox_deriv = set(self.__nao_terminais.intersection(set(prod)))
 
