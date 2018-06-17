@@ -41,6 +41,15 @@ class Producao:
 	def eh_simples(self):
 		return self.__eh_simples
 
+	def eh_epsilon(self):
+		return self.__derivacao_epsilon
+
+	def get_gerador(self):
+		return self.__gerador
+
+	def get_derivacao(self):
+		return self.__derivacao
+
 	def __str__(self):
 		retorno = ""
 		for simbolo in self.__derivacao:
