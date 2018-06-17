@@ -73,7 +73,7 @@ class Model:
     '''
     def remover_recursao(self, gramatica):
         if not gramatica.existe_recursao_esq():
-            raise OperacaoError(" a gramática não possúi nenhuma recursão à esquerda")
+            raise OperacaoError(" a gramática não possui nenhuma recursão à esquerda")
         else:
             resultantes = []
 
@@ -151,7 +151,7 @@ class Model:
     '''
     def remover_simples(self, gramatica):
         if not gramatica.existe_producoes_simples():
-            raise OperacaoError(" a gramática não possúi produções simples")
+            raise OperacaoError(" a gramática não possui produções simples")
         else:
             nova_gramatica, na = gramatica.remove_simples()
             return nova_gramatica, na
@@ -164,7 +164,7 @@ class Model:
     '''
     def remover_inuteis(self, gramatica):
         if not gramatica.existem_inuteis():
-            raise OperacaoError(" a gramática não possúi produções inúteis")
+            raise OperacaoError(" a gramática não possui produções inúteis")
         else:
             resultantes = []
             conjuntos = []
@@ -197,7 +197,7 @@ class Model:
     '''
     def remover_inferteis(self, gramatica):
         if not gramatica.existe_inferteis():
-            raise OperacaoError(" a gramática não possúi produções inférteis")
+            raise OperacaoError(" a gramática não possui produções inférteis")
         else:
             nova_gramatica, nf = gramatica.remove_inferteis()
             return nova_gramatica, nf
@@ -210,7 +210,7 @@ class Model:
     '''
     def remover_inalcancaveis(self, gramatica):
         if not gramatica.existe_inalcancavel():
-            raise OperacaoError(" a gramática não possúi produções inalcançáveis")
+            raise OperacaoError(" a gramática não possui produções inalcançáveis")
         else:
             nova_gramatica, vi = gramatica.remove_inalcancaveis()
             return nova_gramatica, vi

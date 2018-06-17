@@ -23,6 +23,7 @@ class GramaticaLivreDeContexto(Elemento):
 		self.__nao_terminais = set()
 		self.__vn_inicial = None
 		self.__parse(entrada)
+		self.nf = None
 
 	def __parse(self, entrada):
 		inicial_definido = False
@@ -110,7 +111,7 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def remove_recursao_esq(self):
 		if self.existe_recursao_esq():
-			raise OperacaoError(" a gramática não possúi recursão à esquerda")
+			raise OperacaoError(" a gramática não possui recursão à esquerda")
 		elif not self.eh_propria():
 			raise OperacaoError(" a gramática não é própria")
 		else:
@@ -156,7 +157,7 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def remove_simples(self):
 		if not self.existe_producoes_simples():
-			raise OperacaoError(" a gramática não possúi nenhuma produção simples")
+			raise OperacaoError(" a gramática não possui nenhuma produção simples")
 		else:
 			pass
 			# TODO
@@ -182,7 +183,7 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def remove_inferteis(self):
 		if not self.existe_inferteis():
-			raise OperacaoError(" a gramática não possúi nenhuma produção infértil")
+			raise OperacaoError(" a gramática não possui nenhuma produção infértil")
 		else:
 			pass
 			# TODO
@@ -193,20 +194,45 @@ class GramaticaLivreDeContexto(Elemento):
 			#   - Retorna a gramática e o conjunto, nessa ordem
 
 	def existe_inferteis(self):
-		pass
-		# TODO
-		# Deve:
-		#   - Verificar se existem produções inférteis (retorna True ou False)
+		nf = self.obtem_nf()
+		return nf != set()
 
 	def obtem_nf(self):
-		pass
-		# TODO
-		# Deve:
-		#   - Retornar o conjunto NF utilizado no método de remoção de inférteis
+		if self.nf != None:
+			return self.nf
+
+		nf = set()
+		nf_atual = set()
+		continua = True
+		nt = set(self.__conjunto_producoes)
+
+		while continua:
+			nf = set(nf_atual)
+			for A in nt:
+				adicionado = False
+				producoes = self.__conjunto_producoes[A]
+				for x in producoes:
+					if not adicionado:
+						prod = x.get_derivacao()
+						for simbolo in prod:
+							if any(simbolo not in nf_atual and simbolo not in self.__terminais for simbolo in prod):
+								break
+							else:
+								nf_atual.add(A)
+								adicionado = True
+								break
+					else:
+						break
+			nt = nt - nf_atual
+			continua = (nf != nf_atual)
+
+		self.nf = nf
+		return self.nf
+
 
 	def remove_inalcancaveis(self):
 		if not self.existe_inalcancavel():
-			raise OperacaoError(" a gramática não possúi nenhuma produção inalcançável")
+			raise OperacaoError(" a gramática não possui nenhuma produção inalcançável")
 		else:
 			pass
 			# TODO
@@ -236,11 +262,39 @@ class GramaticaLivreDeContexto(Elemento):
 
 	# Propriedades
 
+	'''
+		:return 0 se for vazia, 1 se for finita ou 2 se for infinita
+	'''
 	def finitude(self):
-		pass
-		# TODO
-		# Deve:
-		#   - Retornar 0 se for vazia, 1 se for finita ou 2 se for infinita (Fazer assim primeiro, se sobrar tempo podemos fazer um enum mais bonito)
+		ferteis = self.obtem_nf()
+		if self.__vn_inicial not in ferteis:
+			return 0
+		elif self.__infinita():
+			return 2
+		else:
+			return  1
+
+	def __infinita(self):
+		for A in self.__conjunto_producoes:
+			producoes = self.__conjunto_producoes[A]
+			for x in producoes:
+				prod = x.get_derivacao()
+				if A in prod:
+					return True
+
+				prox_deriv = set(self.__nao_terminais.intersection(set(prod)))
+				visitados = set([A])
+				while any(simbolo not in visitados for simbolo in prox_deriv):
+					for y in prox_deriv:
+						visitados.add(y)
+						producoes = self.__conjunto_producoes[y]
+						for z in producoes:
+							prod = z.get_derivacao()
+							if A in prod:
+								return True
+					prox_deriv = set(self.__nao_terminais.intersection(set(prod)))
+
+		return False
 
 	def first(self, simb):
 		pass
