@@ -306,9 +306,10 @@ class GramaticaLivreDeContexto(Elemento):
 						producoes = self.__conjunto_producoes[y]
 						for z in producoes:
 							prod = z.get_derivacao()
-							contem_terminal = contem_terminal or any(simbolo in self.__terminais for simbolo in prod)
-							if A in prod and contem_terminal:
-								return True
+							if A in prod:
+								contem_terminal = contem_terminal or any(simbolo in self.__terminais for simbolo in prod)
+								if contem_terminal:
+									return True
 					prox_deriv = set(self.__nao_terminais.intersection(set(prod)))
 
 		return False
