@@ -318,46 +318,65 @@ class GramaticaLivreDeContexto(Elemento):
 
 		return False
 
-	def first(self, simb, visitados=None):
-		if not visitados:
-			visitados = set()
-		derivacao = self.__obtem_producao(simb)
+	def first(self, simb):
+		entrada = self.__obtem_producao(simb)
+		if len(entrada) == 1:
+			entrada = entrada[0]
 
-		first = set()
-		terminou_epsilon = True
-		for simbolo in derivacao:
-			if isinstance(simbolo, Vt):
-				first.add(simbolo)
-				terminou_epsilon = False
-				break
-			elif isinstance(simbolo, Vn) and simbolo not in visitados:
-				visitados.add(simbolo)
-				first_vn = set()
-				derivacoes = self.__conjunto_producoes[simbolo]
-				for derivacao in derivacoes:
-					first_vn = first_vn.union(self.first(str(derivacao), visitados))
-				first = first.union(first_vn) - set([Vt(epsilon)])
-				if Vt(epsilon) not in first_vn:
-					terminou_epsilon = False
-					break
-			else:
-				# problema:
-				# Se futuramente tiver "&" eu tenho que continuar
-				# Se futuramente não tiver "&" eu tenho que dar break
+		all_firsts = {}
+		for vn in self.__nao_terminais:
+			all_firsts[vn] = set()
 
-				break
-
-
-		if terminou_epsilon:
-			first.add(Vt(epsilon))
+		self.__first_memo = {}
+		pendencias = {}
+		first = self.__first_aux(entrada, pendencias)
 
 		return first
 
-		pass
-		# TODO
-		# Deve:
-		#   - Verificar se vn pertence à Vn
-		#   - Retornar o conjunto de First de vn
+	def __first_aux(self, entrada, pendencias, visitados=None):
+		if not visitados:
+			visitados = set()
+
+		first = set()
+		if isinstance(entrada, Vt):
+			first.add(entrada)
+		elif isinstance(entrada, Vn):
+			if entrada in self.__first_memo:
+				return self.__first_memo[entrada]
+			else:
+				visitados.add(entrada)
+				derivacoes = self.__conjunto_producoes[entrada]
+				first_do_vn = set()
+				for producao in derivacoes:
+					first_obtido = self.__first_aux(producao, pendencias, visitados)
+					first_do_vn = first_do_vn.union(first_obtido)
+				first = first.union(first_do_vn)
+				self.__first_memo[entrada] = first
+				visitados.remove(entrada)
+		elif isinstance(entrada, Producao):
+			simbolos = entrada.get_derivacao()
+			for i in range(0, len(simbolos)):
+				simbolo = simbolos[i]
+
+				if simbolo not in visitados:
+
+					first_obtido = self.__first_aux(simbolo, pendencias, visitados)
+					first = first.union(first_obtido)
+					if Vt(epsilon) not in first_obtido:
+						break
+
+				elif i < len(simbolos)-1:
+					'''
+						Dependencia circular, retorno o first até então
+						Adiciono uma pendencia apenas se tinham coisas ainda na lista de simbolos à analisar
+					'''
+					# TALVEZ INSERIR COMANDO QUE IGUALA TODOS OS FIRSTS ENTRE ELES?
+					gerador = entrada.get_gerador()
+					if gerador not in pendencias:
+						pendencias[gerador] = []
+					pendencias[gerador].append((simbolo, simbolos[i+1:]))
+					break
+		return first
 
 	def follow(self, simb):
 		pass
