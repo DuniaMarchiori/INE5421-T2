@@ -72,32 +72,36 @@ class GramaticaLivreDeContexto(Elemento):
 		self.__nao_terminais.add(vn)
 		return vn
 
-	def __obtem_producoes(self, vn, producoes, linha):
+	def __obtem_producoes(self, gerador, producoes, linha):
 		producoes_encontradas = producoes.split(simb_ou)
 
 		producoes_resultantes = []
 		for producao in producoes_encontradas:
-			unidades_encontradas = producao.strip().split(" ")
-
-			unidades_resultantes = []
-			for unidade in unidades_encontradas:
-				unidade = unidade.strip()
-				primeiro_simbolo = unidade[0]
-				try:
-					if primeiro_simbolo in alfabeto_nao_terminais_inicial:
-						vn = Vn(unidade)
-						unidades_resultantes.append(vn)
-						self.__nao_terminais.add(vn)
-					elif primeiro_simbolo in (alfabeto_terminais + epsilon):
-						vt = Vt(unidade)
-						unidades_resultantes.append(vt)
-						self.__terminais.add(vt)
-					else:
-						raise ParsingError(": símbolo de Vt ou Vn esperado mas não encontrado")
-				except ParsingError as e:
-					raise ParsingError(e.get_message() + " na linha " + str(linha))
-			producoes_resultantes.append(Producao(vn, unidades_resultantes))
+			try:
+				unidades_resultantes = self.__obtem_producao(producao)
+			except ParsingError as e:
+				raise ParsingError(e.get_message() + " na linha " + str(linha))
+			producoes_resultantes.append(Producao(gerador, unidades_resultantes))
 		return producoes_resultantes
+
+	def __obtem_producao(self, producao):
+		unidades_encontradas = producao.strip().split(" ")
+
+		unidades_resultantes = []
+		for unidade in unidades_encontradas:
+			unidade = unidade.strip()
+			primeiro_simbolo = unidade[0]
+			if primeiro_simbolo in alfabeto_nao_terminais_inicial:
+				vn = Vn(unidade)
+				unidades_resultantes.append(vn)
+				self.__nao_terminais.add(vn)
+			elif primeiro_simbolo in (alfabeto_terminais + epsilon):
+				vt = Vt(unidade)
+				unidades_resultantes.append(vt)
+				self.__terminais.add(vt)
+			else:
+				raise ParsingError(": símbolo de Vt ou Vn esperado mas não encontrado")
+		return unidades_resultantes
 
 	def __adiciona_producao(self, vn, producao):
 		if vn not in self.__conjunto_producoes:
@@ -314,7 +318,41 @@ class GramaticaLivreDeContexto(Elemento):
 
 		return False
 
-	def first(self, simb):
+	def first(self, simb, visitados=None):
+		if not visitados:
+			visitados = set()
+		derivacao = self.__obtem_producao(simb)
+
+		first = set()
+		terminou_epsilon = True
+		for simbolo in derivacao:
+			if isinstance(simbolo, Vt):
+				first.add(simbolo)
+				terminou_epsilon = False
+				break
+			elif isinstance(simbolo, Vn) and simbolo not in visitados:
+				visitados.add(simbolo)
+				first_vn = set()
+				derivacoes = self.__conjunto_producoes[simbolo]
+				for derivacao in derivacoes:
+					first_vn = first_vn.union(self.first(str(derivacao), visitados))
+				first = first.union(first_vn) - set([Vt(epsilon)])
+				if Vt(epsilon) not in first_vn:
+					terminou_epsilon = False
+					break
+			else:
+				# problema:
+				# Se futuramente tiver "&" eu tenho que continuar
+				# Se futuramente não tiver "&" eu tenho que dar break
+
+				break
+
+
+		if terminou_epsilon:
+			first.add(Vt(epsilon))
+
+		return first
+
 		pass
 		# TODO
 		# Deve:

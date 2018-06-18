@@ -223,7 +223,14 @@ class Controller:
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
 			first = self.__model.calcular_first(elemento, vn)
-			self.__view.mostrar_aviso("O First de " + vn + " é: {" + ', '.join(first) + "}", titulo="First")
+			printable = "{"
+			for simb in first:
+				printable += str(simb) + ", "
+			if first:
+				printable = printable[0:-2] + "}"
+			else:
+				printable += " }"
+			self.__view.mostrar_aviso("o first de " + vn + " é: " + printable, titulo="first")
 		except VnError as e:
 			self.__view.mostrar_aviso(e.get_message())
 		except:
