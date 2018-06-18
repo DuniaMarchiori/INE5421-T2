@@ -24,6 +24,7 @@ class GramaticaLivreDeContexto(Elemento):
 		self.__vn_inicial = None
 		self.__parse(entrada)
 		self.__nf = None
+		self.__vi = None
 
 	def __parse(self, entrada):
 		inicial_definido = False
@@ -198,7 +199,7 @@ class GramaticaLivreDeContexto(Elemento):
 		return bool(self.__nao_terminais.difference(nf)) # Retorna falso se a diferença resulta em um conjunto vazio
 
 	def obtem_nf(self):
-		if self.__nf != None:
+		if self.__nf is not None:
 			return self.__nf
 
 		nf = set()
@@ -243,16 +244,29 @@ class GramaticaLivreDeContexto(Elemento):
 			#   - Retorna a gramática e o conjunto, nessa ordem
 
 	def existe_inalcancavel(self):
-		pass
-		# TODO
-		# Deve:
-		#   - Verificar se existem produções inalcancaveis (retorna True ou False)
+		vi = self.obtem_vi()
+		return bool(self.__nao_terminais.difference(vi))  # Retorna falso se a diferença resulta em um conjunto vazio
 
 	def obtem_vi(self):
-		pass
-		# TODO
-		# Deve:
-		#   - Retornar o conjunto Vi utilizado no método de remoção de inalcançáveis
+		if self.__vi is not None:
+			return self.__vi
+
+		vi = set()
+		vi_atual = set()
+		vi_atual.add(self.__vn_inicial)
+		visitados = set()
+
+		while vi != vi_atual:
+			vi = set(vi_atual)
+			for X in set(vi - visitados):
+				visitados.add(X)
+				producoes = self.__conjunto_producoes[X]
+				for y in producoes:
+					prod = y.get_derivacao()
+					vi_atual = vi_atual.union(set(self.__nao_terminais.intersection(set(prod))))
+
+		self.__vi = vi
+		return self.__vi
 
 	def existem_inuteis(self):
 		return self.existe_inferteis() or self.existe_inalcancavel()
@@ -275,7 +289,8 @@ class GramaticaLivreDeContexto(Elemento):
 			return  1
 
 	def __infinita(self):
-		for A in self.__conjunto_producoes:
+		simbolos_uteis = self.obtem_nf().intersection(self.obtem_vi())
+		for A in simbolos_uteis:
 			producoes = self.__conjunto_producoes[A]
 			for x in producoes:
 				prod = x.get_derivacao()
