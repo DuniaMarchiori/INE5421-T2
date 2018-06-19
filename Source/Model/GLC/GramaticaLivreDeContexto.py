@@ -331,11 +331,23 @@ class GramaticaLivreDeContexto(Elemento):
 		pendencias = {}
 		first = self.__first_aux(entrada, pendencias)
 
+		if pendencias:
+			print(pendencias)
+
+		'''
+		for pendencia in pendencias:
+			for par in pendencias[pendencia]:
+				desconhecido = par[0]
+				if Vt(epsilon) in self.__first_memo[desconhecido]:
+					first_pendencia = self.__first_aux(Producao(pendencia, par[1]), pendencias)
+					self.__first_memo[desconhecido] = self.__first_memo[desconhecido].union(first_pendencia)
+		'''
+
 		return first
 
 	def __first_aux(self, entrada, pendencias, visitados=None):
 		if not visitados:
-			visitados = set()
+			visitados = []
 
 		first = set()
 		if isinstance(entrada, Vt):
@@ -344,7 +356,7 @@ class GramaticaLivreDeContexto(Elemento):
 			if entrada in self.__first_memo:
 				return self.__first_memo[entrada]
 			else:
-				visitados.add(entrada)
+				visitados.append(entrada)
 				derivacoes = self.__conjunto_producoes[entrada]
 				first_do_vn = set()
 				for producao in derivacoes:
@@ -352,10 +364,11 @@ class GramaticaLivreDeContexto(Elemento):
 					first_do_vn = first_do_vn.union(first_obtido)
 				first = first.union(first_do_vn)
 				self.__first_memo[entrada] = first
-				visitados.remove(entrada)
+				visitados.pop()
 		elif isinstance(entrada, Producao):
 			simbolos = entrada.get_derivacao()
 			for i in range(0, len(simbolos)):
+				first.discard(Vt(epsilon))
 				simbolo = simbolos[i]
 
 				if simbolo not in visitados:
@@ -370,7 +383,18 @@ class GramaticaLivreDeContexto(Elemento):
 						Dependencia circular, retorno o first até então
 						Adiciono uma pendencia apenas se tinham coisas ainda na lista de simbolos à analisar
 					'''
-					# TALVEZ INSERIR COMANDO QUE IGUALA TODOS OS FIRSTS ENTRE ELES?
+					firsts_equivalentes = set()
+					equivalentes = set()
+					for j in range(0, len(visitados), -1):
+						verificando = visitados[j]
+						equivalentes.add(verificando)
+						if verificando != simbolo:
+							firsts_equivalentes = firsts_equivalentes.union(self.__first_memo[verificando])
+						else:
+							break
+					for equivalente in equivalentes:
+						self.__first_memo[equivalente] = firsts_equivalentes
+
 					gerador = entrada.get_gerador()
 					if gerador not in pendencias:
 						pendencias[gerador] = []
