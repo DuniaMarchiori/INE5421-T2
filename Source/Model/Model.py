@@ -225,55 +225,36 @@ class Model:
         return gramatica.finitude()
 
     '''
-        Método que calcula o First de um Vn qualquer de uma gramática.
+        Método que calcula o First de uma gramática.
         \:param gramatica onde vn se encontra.
-        \:param vn é o simbolo pertencente à Vn cujo First será calculado.
     '''
-    def calcular_first(self, gramatica, vn):
-        obj_vn = None
-        try:
-            obj_vn = Vn(vn)
-        except:
-            raise VnError("Símbolo fornecido não é um símbolo de Vn válido.")
-
-        if not gramatica.vn_pertence(obj_vn):
-            raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
-
-        return gramatica.first(vn)
+    def calcular_first(self, gramatica):
+        first_string = ""
+        firsts = gramatica.first()
+        for vn in firsts:
+            first_string += "First(" + str(vn) + ") = { "
+            i = 0
+            for first in firsts[vn]:
+                first_string += str(first)
+                if i < len(firsts[vn]) - 1:
+                    first_string += ", "
+                i += 1
+            first_string += " }\n"
+        return first_string
 
     '''
-        Método que calcula o Follow de um Vn qualquer de uma gramática.
+        Método que calcula o Follow de uma gramática.
         \:param gramatica onde vn se encontra.
-        \:param vn é o simbolo pertencente à Vn cujo Follow será calculado.
     '''
-    def calcular_follow(self, gramatica, vn):
-        obj_vn = None
-        try:
-            obj_vn = Vn(vn)
-        except:
-            raise VnError("Símbolo fornecido não é um símbolo de Vn válido.")
-
-        if not gramatica.vn_pertence(obj_vn):
-            raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
-
-        return gramatica.follow(vn)
+    def calcular_follow(self, gramatica):
+        return gramatica.follow()
 
     '''
-        Método que calcula o First-NT de um Vn qualquer de uma gramática.
+        Método que calcula o First-NT de uma gramática.
         \:param gramatica onde vn se encontra.
-        \:param vn é o simbolo pertencente à Vn cujo First-NT será calculado.
     '''
-    def calcular_first_nt(self, gramatica, vn):
-        obj_vn = None
-        try:
-            obj_vn = Vn(vn)
-        except:
-            raise VnError("Símbolo fornecido não é um símbolo de Vn válido.")
-
-        if not gramatica.vn_pertence(obj_vn):
-            raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
-
-        return gramatica.first_nt(vn)
+    def calcular_first_nt(self, gramatica):
+        return gramatica.first_nt()
 
     '''
         Método que verifica se uma gramática está fatorada.

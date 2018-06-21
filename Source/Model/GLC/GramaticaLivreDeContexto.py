@@ -318,108 +318,57 @@ class GramaticaLivreDeContexto(Elemento):
 
 		return False
 
-	def first(self, simb):
-		entrada = self.__obtem_producao(simb)
-		if len(entrada) == 1:
-			entrada = entrada[0]
-
-		all_firsts = {}
-		for vn in self.__nao_terminais:
-			all_firsts[vn] = set()
-
-		self.__first_memo = {}
-		pendencias = {}
-		first = self.__first_aux(entrada, pendencias)
-
-		if pendencias:
-			print(pendencias)
-
-		'''
-		for pendencia in pendencias:
-			for par in pendencias[pendencia]:
-				desconhecido = par[0]
-				if Vt(epsilon) in self.__first_memo[desconhecido]:
-					first_pendencia = self.__first_aux(Producao(pendencia, par[1]), pendencias)
-					self.__first_memo[desconhecido] = self.__first_memo[desconhecido].union(first_pendencia)
-		'''
-
-		return first
-
-	def __first_aux(self, entrada, pendencias, visitados=None):
-		if not visitados:
-			visitados = []
-
-		first = set()
-		if isinstance(entrada, Vt):
-			first.add(entrada)
-		elif isinstance(entrada, Vn):
-			if entrada in self.__first_memo:
-				return self.__first_memo[entrada]
-			else:
-				visitados.append(entrada)
-				derivacoes = self.__conjunto_producoes[entrada]
-				first_do_vn = set()
-				for producao in derivacoes:
-					first_obtido = self.__first_aux(producao, pendencias, visitados)
-					first_do_vn = first_do_vn.union(first_obtido)
-				first = first.union(first_do_vn)
-				self.__first_memo[entrada] = first
-				visitados.pop()
-		elif isinstance(entrada, Producao):
-			simbolos = entrada.get_derivacao()
-			for i in range(0, len(simbolos)):
-				first.discard(Vt(epsilon))
-				simbolo = simbolos[i]
-
-				if simbolo not in visitados:
-
-					first_obtido = self.__first_aux(simbolo, pendencias, visitados)
-					first = first.union(first_obtido)
-					if Vt(epsilon) not in first_obtido:
-						break
-
-				elif i < len(simbolos)-1:
-					'''
-						Dependencia circular, retorno o first até então
-						Adiciono uma pendencia apenas se tinham coisas ainda na lista de simbolos à analisar
-					'''
-					firsts_equivalentes = set()
-					equivalentes = set()
-					for j in range(0, len(visitados), -1):
-						verificando = visitados[j]
-						equivalentes.add(verificando)
-						if verificando != simbolo:
-							firsts_equivalentes = firsts_equivalentes.union(self.__first_memo[verificando])
-						else:
+	def first(self):
+		firsts = {}
+		epsilon_vt = Vt(epsilon)
+		epsilon_set = set([epsilon_vt])
+		houve_mudanca = True
+		while houve_mudanca:
+			houve_mudanca = False
+			for vn in self.__nao_terminais:
+				if vn not in firsts:
+					firsts[vn] = set()
+				for producao in self.__conjunto_producoes[vn]:
+					derivacoes = producao.get_derivacao()
+					incluir_epsilon = True
+					for simbolo in derivacoes:
+						if isinstance(simbolo, Vt):
+							if simbolo not in firsts[vn]:
+								firsts[vn].add(simbolo)
+								houve_mudanca = True
+							incluir_epsilon = False
 							break
-					for equivalente in equivalentes:
-						self.__first_memo[equivalente] = firsts_equivalentes
-
-					gerador = entrada.get_gerador()
-					if gerador not in pendencias:
-						pendencias[gerador] = []
-					pendencias[gerador].append((simbolo, simbolos[i+1:]))
-					break
-		return first
+						elif isinstance(simbolo, Vn):
+							if simbolo not in firsts:
+								firsts[simbolo] = set()
+							if (firsts[simbolo] - epsilon_set) - firsts[vn]:  # Se a diferença entre os firsts não for nula
+								firsts[vn] = firsts[vn].union(firsts[simbolo] - epsilon_set)
+								houve_mudanca = True
+							if epsilon_vt not in firsts[simbolo]:
+								incluir_epsilon = False
+								break
+					if incluir_epsilon and epsilon_vt not in firsts[vn]:
+						firsts[vn].add(Vt(epsilon))
+						houve_mudanca = True
+		return firsts
 
 	def follow(self, simb):
 		pass
 		# TODO
 		# Deve:
-		#   - Verificar se vn pertence à Vn
 		#   - Retornar o conjunto de Follow de vn
 
 	def first_nt(self, simb):
 		pass
 		# TODO
 		# Deve:
-		#   - Verificar se vn pertence à Vn
 		#   - Retornar o conjunto de First-NT de vn
 
 	def esta_fatorada(self):
-		for vn in self.__conjunto_producoes:
+		for vn in self.__nao_terminais:
 			firsts_das_derivacoes = set()
 			for derivacao in self.__conjunto_producoes[vn]:
+				# TODO REFAZER! Devido a mudança no first, temos que rever como vamos calcular o first de uma produção genérica.
 				first_dessa_derivacao = self.first(str(derivacao))
 				if firsts_das_derivacoes & first_dessa_derivacao:  # intersecção não é nula:
 					return False
