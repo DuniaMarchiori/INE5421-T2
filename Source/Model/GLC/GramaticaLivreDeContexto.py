@@ -352,6 +352,28 @@ class GramaticaLivreDeContexto(Elemento):
 						houve_mudanca = True
 		return firsts
 
+	def first_producao(self, producao):
+		epsilon_vt = Vt(epsilon)
+		epsilon_set = set([epsilon_vt])
+		first_vns = self.first()
+		first = set()
+		inclui_epsilon = True
+		derivacao = producao.get_derivacao()
+		for simbolo in derivacao:
+			if isinstance(simbolo, Vt):
+				first.add(simbolo)
+				inclui_epsilon = False
+				break
+			elif isinstance(simbolo, Vn):
+				firsts_do_vn = first_vns[simbolo]
+				first = first.union(firsts_do_vn - epsilon_set)
+				if epsilon_vt not in firsts_do_vn:
+					inclui_epsilon = False
+					break
+		if inclui_epsilon:
+			first.add(epsilon_vt)
+		return first
+
 	def follow(self, simb):
 		pass
 		# TODO
@@ -367,11 +389,12 @@ class GramaticaLivreDeContexto(Elemento):
 	def esta_fatorada(self):
 		for vn in self.__nao_terminais:
 			firsts_das_derivacoes = set()
-			for derivacao in self.__conjunto_producoes[vn]:
-				# TODO REFAZER! Devido a mudança no first, temos que rever como vamos calcular o first de uma produção genérica.
-				first_dessa_derivacao = self.first(str(derivacao))
-				if firsts_das_derivacoes & first_dessa_derivacao:  # intersecção não é nula:
+			for producao in self.__conjunto_producoes[vn]:
+				first_producao = self.first_producao(producao)
+				if firsts_das_derivacoes.intersection(first_producao):
 					return False
+				else:
+					firsts_das_derivacoes = firsts_das_derivacoes.union(first_producao)
 		return True
 
 	def eh_fatoravel_em_n_passos(self, n):
