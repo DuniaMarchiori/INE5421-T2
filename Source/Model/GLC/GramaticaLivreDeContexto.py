@@ -464,11 +464,6 @@ class GramaticaLivreDeContexto(Elemento):
 		self.__first_nt_memo = firsts_nt
 		return self.__first_nt_memo
 
-		pass
-		# TODO
-		# Deve:
-		#   - Retornar o conjunto de First-NT de vn
-
 	def esta_fatorada(self):
 		for vn in self.__nao_terminais:
 			firsts_das_derivacoes = set()
