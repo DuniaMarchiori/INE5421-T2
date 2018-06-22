@@ -25,6 +25,9 @@ class GramaticaLivreDeContexto(Elemento):
 		self.__parse(entrada)
 		self.__nf = None
 		self.__vi = None
+		self.__first_memo = None
+		self.__follow_memo = None
+		self.__first_nt_memo = None
 
 	def __parse(self, entrada):
 		inicial_definido = False
@@ -319,19 +322,22 @@ class GramaticaLivreDeContexto(Elemento):
 		return False
 
 	def first(self):
-		firsts = {}
+		if self.__first_memo is not None:
+			return self.__first_memo
+
+		firsts = OrderedDict()
 		epsilon_vt = Vt(epsilon)
 		epsilon_set = set([epsilon_vt])
 		houve_mudanca = True
 		while houve_mudanca:
 			houve_mudanca = False
-			for vn in self.__nao_terminais:
+			for vn in self.__conjunto_producoes:
 				if vn not in firsts:
 					firsts[vn] = set()
 				for producao in self.__conjunto_producoes[vn]:
-					derivacoes = producao.get_derivacao()
+					derivacao = producao.get_derivacao()
 					incluir_epsilon = True
-					for simbolo in derivacoes:
+					for simbolo in derivacao:
 						if isinstance(simbolo, Vt):
 							if simbolo not in firsts[vn]:
 								firsts[vn].add(simbolo)
@@ -350,7 +356,8 @@ class GramaticaLivreDeContexto(Elemento):
 					if incluir_epsilon and epsilon_vt not in firsts[vn]:
 						firsts[vn].add(Vt(epsilon))
 						houve_mudanca = True
-		return firsts
+		self.__first_memo = firsts
+		return self.__first_memo
 
 	def first_producao(self, producao):
 		epsilon_vt = Vt(epsilon)
@@ -374,13 +381,89 @@ class GramaticaLivreDeContexto(Elemento):
 			first.add(epsilon_vt)
 		return first
 
-	def follow(self, simb):
-		pass
-		# TODO
-		# Deve:
-		#   - Retornar o conjunto de Follow de vn
+	def follow(self):
+		if self.__follow_memo is not None:
+			return self.__follow_memo
 
-	def first_nt(self, simb):
+		#final_de_sentenca = Vt(simb_final_de_sentenca)
+		final_de_sentenca = simb_final_de_sentenca
+		epsilon_vt = Vt(epsilon)
+		epsilon_set = set([epsilon_vt])
+		follows = OrderedDict()
+
+		# Passo 1
+		for vn in self.__conjunto_producoes:
+			follows[vn] = set()
+			if vn == self.__vn_inicial:
+				follows[vn].add(final_de_sentenca)
+
+		# Passo 2
+		first_betas = {}
+		for vn in self.__nao_terminais:
+			for producao in self.__conjunto_producoes[vn]:
+				derivacao = producao.get_derivacao()
+				for i in range(0, len(derivacao)):
+					if i < len(derivacao) - 1:
+						simbolo = derivacao[i]
+						if isinstance(simbolo, Vn):
+							beta = Producao(producao.get_gerador(), derivacao[i+1:])
+							if beta not in first_betas:
+								first_betas[beta] = self.first_producao(beta)
+							follows[simbolo] = follows[simbolo].union(first_betas[beta] - epsilon_set)
+
+		# Passo 3
+		houve_mudanca = True
+		while houve_mudanca:
+			houve_mudanca = False
+			for vn in self.__nao_terminais:
+				follow_gerador = follows[vn]
+				for producao in self.__conjunto_producoes[vn]:
+					derivacao = producao.get_derivacao()
+					for i in range(0, len(derivacao)):
+						simbolo = derivacao[i]
+						if isinstance(simbolo, Vn):
+							if i < len(derivacao) - 1:
+								beta = Producao(producao.get_gerador(), derivacao[i + 1:])
+							else:
+								beta = Producao(producao.get_gerador(), [epsilon_vt])
+							if beta not in first_betas:
+								first_betas[beta] = self.first_producao(beta)
+
+							if epsilon_vt in first_betas[beta]:
+								novo_follow = follows[simbolo].union(follow_gerador)
+								if follows[simbolo].symmetric_difference(novo_follow):
+									follows[simbolo] = novo_follow
+									houve_mudanca = True
+
+		self.__follow_memo = follows
+		return self.__follow_memo
+
+	def first_nt(self):
+		if self.__first_nt_memo is not None:
+			return self.__first_nt_memo
+
+		firsts_nt = OrderedDict()
+		firsts = self.first()
+		epsilon_vt = Vt(epsilon)
+		houve_mudanca = True
+		while houve_mudanca:
+			houve_mudanca = False
+			for vn in self.__conjunto_producoes:
+				if vn not in firsts_nt:
+					firsts_nt[vn] = set()
+				for producao in self.__conjunto_producoes[vn]:
+					derivacao = producao.get_derivacao()
+					for simbolo in derivacao:
+						if isinstance(simbolo, Vn):
+							firsts_nt[vn].add(simbolo)
+							if epsilon_vt not in firsts[simbolo]:
+								break
+						else:
+							break
+
+		self.__first_nt_memo = firsts_nt
+		return self.__first_nt_memo
+
 		pass
 		# TODO
 		# Deve:

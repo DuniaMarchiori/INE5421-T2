@@ -229,8 +229,9 @@ class Model:
         \:param gramatica onde vn se encontra.
     '''
     def calcular_first(self, gramatica):
-        first_string = ""
         firsts = gramatica.first()
+
+        first_string = ""
         for vn in firsts:
             first_string += "First(" + str(vn) + ") = { "
             i = 0
@@ -247,14 +248,38 @@ class Model:
         \:param gramatica onde vn se encontra.
     '''
     def calcular_follow(self, gramatica):
-        return gramatica.follow()
+        follows = gramatica.follow()
+
+        follow_string = ""
+        for vn in follows:
+            follow_string += "Follow(" + str(vn) + ") = { "
+            i = 0
+            for first in follows[vn]:
+                follow_string += str(first)
+                if i < len(follows[vn]) - 1:
+                    follow_string += ", "
+                i += 1
+            follow_string += " }\n"
+        return follow_string
 
     '''
         Método que calcula o First-NT de uma gramática.
         \:param gramatica onde vn se encontra.
     '''
     def calcular_first_nt(self, gramatica):
-        return gramatica.first_nt()
+        firsts_nt = gramatica.first_nt()
+
+        firsts_nt_string = ""
+        for vn in firsts_nt:
+            firsts_nt_string += "First-NT(" + str(vn) + ") = { "
+            i = 0
+            for first in firsts_nt[vn]:
+                firsts_nt_string += str(first)
+                if i < len(firsts_nt[vn]) - 1:
+                    firsts_nt_string += ", "
+                i += 1
+            firsts_nt_string += " }\n"
+        return firsts_nt_string
 
     '''
         Método que verifica se uma gramática está fatorada.
