@@ -22,11 +22,11 @@ class GramaticaLivreDeContexto(Elemento):
 		self._terminais = set()
 		self._nao_terminais = set()
 		self._vn_inicial = None
-		self._parse(entrada)
+		self.__parse(entrada)
 		self.__nf = None
 		self.__vi = None
 
-	def _parse(self, entrada):
+	def __parse(self, entrada):
 		inicial_definido = False
 		entrada_linhas = entrada.splitlines()
 		num_linha = 0
