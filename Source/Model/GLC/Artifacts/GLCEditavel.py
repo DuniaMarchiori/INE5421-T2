@@ -29,7 +29,7 @@ class GLCEditavel(GramaticaLivreDeContexto):
 		if not isinstance(producao, Producao) or not self.vn_pertence(gerador):
 			raise Exception("Erro Interno")
 
-		producoes = self.__conjunto_producoes[gerador]
+		producoes = self._conjunto_producoes[gerador]
 		producoes.remove(producao)
 		if not producoes:
 			self._conjunto_producoes.pop(gerador, None)
@@ -45,6 +45,7 @@ class GLCEditavel(GramaticaLivreDeContexto):
 		for unidade in producao.get_derivacao():
 			self._terminais.add(unidade)
 
+	# Esse método remove Vn's tanto da lista de produções quanto remove produções que contém ele.
 	def remove_vn(self, vn):
 		if not isinstance(vn, Vn) or not self.vn_pertence(vn):
 			raise Exception("Erro Interno")
@@ -63,5 +64,5 @@ class GLCEditavel(GramaticaLivreDeContexto):
 			for producao_a_remover in producoes_a_remover:
 				producoes.remove(producao_a_remover)
 
-	def obter_glc_padrao(self):
-		return GramaticaLivreDeContexto(self.get_nome(), self.to_string())
+	def obter_glc_padrao(self, nome):
+		return GramaticaLivreDeContexto(nome, self.to_string())
