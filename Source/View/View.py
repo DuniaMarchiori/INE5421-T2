@@ -205,31 +205,20 @@ class View:
 		self.__button_finitude = Button(self.__frame_propriedades, text="Calcular", command=lambda: self.__controller.cb_propriedade_finitude(self.__get_indice_selecionado()))
 		self.__configura_elemento(self.__button_finitude, row=0, column=2, rowweight=0, columnweight=0, sticky=W+E)
 
-		label_first = Label(self.__frame_propriedades, text="Calcular First de: ", pady=padding)
-		self.__configura_elemento(label_first, row=1, column=0, rowweight=1, columnweight=0, sticky=W)
-		f = Frame(self.__frame_propriedades, padx=padding)
-		self.__configura_elemento(f, row=1, column=1, rowweight=0, columnweight=0, sticky=W+E)
-		entry_simbolos_first = Entry(f, textvariable=self.__string_simbolos_first)
-		self.__configura_elemento(entry_simbolos_first)
-		button_first = Button(self.__frame_propriedades, text="Calcular", command=self.cb_propriedade_first)
+		label_first = Label(self.__frame_propriedades, text="Calcular First", pady=padding)
+		self.__configura_elemento(label_first, row=1, column=0, rowweight=1, columnweight=0, columnspan=2, sticky=W)
+		button_first = Button(self.__frame_propriedades, text="Calcular", command=lambda: self.__controller.cb_propriedade_first(self.__get_indice_selecionado()))
 		self.__configura_elemento(button_first, row=1, column=2, rowweight=0, columnweight=0, sticky=W+E)
 
-		label_follow = Label(self.__frame_propriedades, text="Calcular Follow de: ", pady=padding)
-		self.__configura_elemento(label_follow, row=2, column=0, rowweight=1, columnweight=0, sticky=W)
+		label_follow = Label(self.__frame_propriedades, text="Calcular Follow", pady=padding)
+		self.__configura_elemento(label_follow, row=2, column=0, rowweight=1, columnweight=0, columnspan=2, sticky=W)
 		f = Frame(self.__frame_propriedades, padx=padding)
-		self.__configura_elemento(f, row=2, column=1, rowweight=0, columnweight=0, sticky=W+E)
-		entry_simbolos_follow = Entry(f, textvariable=self.__string_simbolos_follow)
-		self.__configura_elemento(entry_simbolos_follow)
-		button_follow = Button(self.__frame_propriedades, text="Calcular", command=self.cb_propriedade_follow)
+		button_follow = Button(self.__frame_propriedades, text="Calcular", command=lambda: self.__controller.cb_propriedade_follow(self.__get_indice_selecionado()))
 		self.__configura_elemento(button_follow, row=2, column=2, rowweight=0, columnweight=0, sticky=W+E)
 
-		label_first_nt = Label(self.__frame_propriedades, text="Calcular First-NT de: ", pady=padding)
-		self.__configura_elemento(label_first_nt, row=3, column=0, rowweight=1, columnweight=0, sticky=W)
-		f = Frame(self.__frame_propriedades, padx=padding)
-		self.__configura_elemento(f, row=3, column=1, rowweight=0, columnweight=0, sticky=W+E)
-		entry_simbolos_first_nt = Entry(f, textvariable=self.__string_simbolos_first_nt)
-		self.__configura_elemento(entry_simbolos_first_nt)
-		button_first_nt = Button(self.__frame_propriedades, text="Calcular", command=self.cb_propriedade_first_nt)
+		label_first_nt = Label(self.__frame_propriedades, text="Calcular First-NT", pady=padding)
+		self.__configura_elemento(label_first_nt, row=3, column=0, rowweight=1, columnweight=0, columnspan=2, sticky=W)
+		button_first_nt = Button(self.__frame_propriedades, text="Calcular", command=lambda: self.__controller.cb_propriedade_first_nt(self.__get_indice_selecionado()))
 		self.__configura_elemento(button_first_nt, row=3, column=2, rowweight=0, columnweight=0, sticky=W+E)
 
 		label_fatorada = Label(self.__frame_propriedades, text="GLC está fatorada?", pady=padding)
@@ -443,21 +432,6 @@ class View:
 	def cb_seleciona_lista(self, event=None):
 		indice = self.__get_indice_selecionado()
 		self.__controller.cb_alterar_elemento_selecionado(indice)
-
-	def cb_propriedade_first(self):
-		indice_selecionado = self.__get_indice_selecionado()
-		simbolos = self.__string_simbolos_first.get()
-		self.__controller.cb_propriedade_first(indice_selecionado, simbolos)
-
-	def cb_propriedade_follow(self):
-		indice_selecionado = self.__get_indice_selecionado()
-		simbolos = self.__string_simbolos_follow.get()
-		self.__controller.cb_propriedade_follow(indice_selecionado, simbolos)
-
-	def cb_propriedade_first_nt(self):
-		indice_selecionado = self.__get_indice_selecionado()
-		simbolos = self.__string_simbolos_first_nt.get()
-		self.__controller.cb_propriedade_first_nt(indice_selecionado, simbolos)
 
 	def cb_propriedade_fatoravel(self):
 		indice_selecionado = self.__get_indice_selecionado()

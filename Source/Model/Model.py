@@ -225,55 +225,61 @@ class Model:
         return gramatica.finitude()
 
     '''
-        Método que calcula o First de um Vn qualquer de uma gramática.
+        Método que calcula o First de uma gramática.
         \:param gramatica onde vn se encontra.
-        \:param vn é o simbolo pertencente à Vn cujo First será calculado.
     '''
-    def calcular_first(self, gramatica, vn):
-        obj_vn = None
-        try:
-            obj_vn = Vn(vn)
-        except:
-            raise VnError("Símbolo fornecido não é um símbolo de Vn válido.")
+    def calcular_first(self, gramatica):
+        firsts = gramatica.first()
 
-        if not gramatica.vn_pertence(obj_vn):
-            raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
-
-        return gramatica.first(vn)
+        first_string = ""
+        for vn in firsts:
+            first_string += "First(" + str(vn) + ") = { "
+            i = 0
+            for first in firsts[vn]:
+                first_string += str(first)
+                if i < len(firsts[vn]) - 1:
+                    first_string += ", "
+                i += 1
+            first_string += " }\n"
+        return first_string
 
     '''
-        Método que calcula o Follow de um Vn qualquer de uma gramática.
+        Método que calcula o Follow de uma gramática.
         \:param gramatica onde vn se encontra.
-        \:param vn é o simbolo pertencente à Vn cujo Follow será calculado.
     '''
-    def calcular_follow(self, gramatica, vn):
-        obj_vn = None
-        try:
-            obj_vn = Vn(vn)
-        except:
-            raise VnError("Símbolo fornecido não é um símbolo de Vn válido.")
+    def calcular_follow(self, gramatica):
+        follows = gramatica.follow()
 
-        if not gramatica.vn_pertence(obj_vn):
-            raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
-
-        return gramatica.follow(vn)
+        follow_string = ""
+        for vn in follows:
+            follow_string += "Follow(" + str(vn) + ") = { "
+            i = 0
+            for first in follows[vn]:
+                follow_string += str(first)
+                if i < len(follows[vn]) - 1:
+                    follow_string += ", "
+                i += 1
+            follow_string += " }\n"
+        return follow_string
 
     '''
-        Método que calcula o First-NT de um Vn qualquer de uma gramática.
+        Método que calcula o First-NT de uma gramática.
         \:param gramatica onde vn se encontra.
-        \:param vn é o simbolo pertencente à Vn cujo First-NT será calculado.
     '''
-    def calcular_first_nt(self, gramatica, vn):
-        obj_vn = None
-        try:
-            obj_vn = Vn(vn)
-        except:
-            raise VnError("Símbolo fornecido não é um símbolo de Vn válido.")
+    def calcular_first_nt(self, gramatica):
+        firsts_nt = gramatica.first_nt()
 
-        if not gramatica.vn_pertence(obj_vn):
-            raise VnError("Símbolo fornecido não pertencente à Vn da gramática.")
-
-        return gramatica.first_nt(vn)
+        firsts_nt_string = ""
+        for vn in firsts_nt:
+            firsts_nt_string += "First-NT(" + str(vn) + ") = { "
+            i = 0
+            for first in firsts_nt[vn]:
+                firsts_nt_string += str(first)
+                if i < len(firsts_nt[vn]) - 1:
+                    firsts_nt_string += ", "
+                i += 1
+            firsts_nt_string += " }\n"
+        return firsts_nt_string
 
     '''
         Método que verifica se uma gramática está fatorada.

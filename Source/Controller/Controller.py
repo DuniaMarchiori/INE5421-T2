@@ -215,47 +215,38 @@ class Controller:
 			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
 
 	'''
-		Obtem o First do Vn passado por parâmetro.
+		Obtem o First de uma gramática.
 		\:param indice é o índice da GLC na lista.
-		\:param vn é o simbolo pertencente à Vn cujo First será calculado.
 	'''
-	def cb_propriedade_first(self, indice, vn):
+	def cb_propriedade_first(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			first = self.__model.calcular_first(elemento, vn)
-			self.__view.mostrar_aviso("O First de " + vn + " é: {" + ', '.join(first) + "}", titulo="First")
-		except VnError as e:
-			self.__view.mostrar_aviso(e.get_message())
+			first = self.__model.calcular_first(elemento)
+			self.__view.mostrar_aviso("O first dessa GLC é:\n" + str(first), titulo="First")
 		except:
 			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
 
 	'''
-		Obtem o Follow do Vn passado por parâmetro.
+		Obtem o Follow de uma gramática.
 		\:param indice é o índice da GLC na lista.
-		\:param vn é o simbolo pertencente à Vn cujo Follow será calculado.
 	'''
-	def cb_propriedade_follow(self, indice, vn):
+	def cb_propriedade_follow(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			follow = self.__model.calcular_follow(elemento, vn)
-			self.__view.mostrar_aviso("O Follow de " + vn + " é: {" + ', '.join(follow) + "}", titulo="Follow")
-		except VnError as e:
-			self.__view.mostrar_aviso(e.get_message())
+			follow = self.__model.calcular_follow(elemento)
+			self.__view.mostrar_aviso("O follow dessa GLC é:\n" + str(follow), titulo="Follow")
 		except:
 			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
 
 	'''
-		Obtem o First-NT do Vn passado por parâmetro.
+		Obtem o First-NT de uma gramática.
 		\:param indice é o índice da GLC na lista.
-		\:param vn é o simbolo pertencente à Vn cujo First será calculado.
 	'''
-	def cb_propriedade_first_nt(self, indice, vn):
+	def cb_propriedade_first_nt(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			first_nt = self.__model.calcular_first_nt(elemento, vn)
-			self.__view.mostrar_aviso("O First-NT de " + vn + " é: {" + ', '.join(first_nt) + "}", titulo="First-NT")
-		except VnError as e:
-			self.__view.mostrar_aviso(e.get_message())
+			first_nt = self.__model.calcular_first_nt(elemento)
+			self.__view.mostrar_aviso("O first-nt dessa GLC é:\n" + str(first_nt), titulo="First-NT")
 		except:
 			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
 

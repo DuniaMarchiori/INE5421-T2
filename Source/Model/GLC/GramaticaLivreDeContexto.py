@@ -25,6 +25,9 @@ class GramaticaLivreDeContexto(Elemento):
 		self.__parse(entrada)
 		self.__nf = None
 		self.__vi = None
+		self.__first_memo = None
+		self.__follow_memo = None
+		self.__first_nt_memo = None
 
 	def __parse(self, entrada):
 		inicial_definido = False
@@ -72,32 +75,36 @@ class GramaticaLivreDeContexto(Elemento):
 		self._nao_terminais.add(vn)
 		return vn
 
-	def __obtem_producoes(self, vn, producoes, linha):
+	def __obtem_producoes(self, gerador, producoes, linha):
 		producoes_encontradas = producoes.split(simb_ou)
 
 		producoes_resultantes = []
 		for producao in producoes_encontradas:
-			unidades_encontradas = producao.strip().split(" ")
-
-			unidades_resultantes = []
-			for unidade in unidades_encontradas:
-				unidade = unidade.strip()
-				primeiro_simbolo = unidade[0]
-				try:
-					if primeiro_simbolo in alfabeto_nao_terminais_inicial:
-						vn = Vn(unidade)
-						unidades_resultantes.append(vn)
-						self._nao_terminais.add(vn)
-					elif primeiro_simbolo in (alfabeto_terminais + epsilon):
-						vt = Vt(unidade)
-						unidades_resultantes.append(vt)
-						self._terminais.add(vt)
-					else:
-						raise ParsingError(": símbolo de Vt ou Vn esperado mas não encontrado")
-				except ParsingError as e:
-					raise ParsingError(e.get_message() + " na linha " + str(linha))
-			producoes_resultantes.append(Producao(vn, unidades_resultantes))
+			try:
+				unidades_resultantes = self.__obtem_producao(producao)
+			except ParsingError as e:
+				raise ParsingError(e.get_message() + " na linha " + str(linha))
+			producoes_resultantes.append(Producao(gerador, unidades_resultantes))
 		return producoes_resultantes
+
+	def __obtem_producao(self, producao):
+		unidades_encontradas = producao.strip().split(" ")
+
+		unidades_resultantes = []
+		for unidade in unidades_encontradas:
+			unidade = unidade.strip()
+			primeiro_simbolo = unidade[0]
+			if primeiro_simbolo in alfabeto_nao_terminais_inicial:
+				vn = Vn(unidade)
+				unidades_resultantes.append(vn)
+				self._nao_terminais.add(vn)
+			elif primeiro_simbolo in (alfabeto_terminais + epsilon):
+				vt = Vt(unidade)
+				unidades_resultantes.append(vt)
+				self._terminais.add(vt)
+			else:
+				raise ParsingError(": símbolo de Vt ou Vn esperado mas não encontrado")
+		return unidades_resultantes
 
 	def __adiciona_producao(self, vn, producao):
 		if vn not in self._conjunto_producoes:
@@ -314,34 +321,158 @@ class GramaticaLivreDeContexto(Elemento):
 
 		return False
 
-	def first(self, simb):
-		pass
-		# TODO
-		# Deve:
-		#   - Verificar se vn pertence à Vn
-		#   - Retornar o conjunto de First de vn
+	def first(self):
+		if self.__first_memo is not None:
+			return self.__first_memo
 
-	def follow(self, simb):
-		pass
-		# TODO
-		# Deve:
-		#   - Verificar se vn pertence à Vn
-		#   - Retornar o conjunto de Follow de vn
+		firsts = OrderedDict()
+		epsilon_vt = Vt(epsilon)
+		epsilon_set = set([epsilon_vt])
+		houve_mudanca = True
+		while houve_mudanca:
+			houve_mudanca = False
+			for vn in self._conjunto_producoes:
+				if vn not in firsts:
+					firsts[vn] = set()
+				for producao in self._conjunto_producoes[vn]:
+					derivacao = producao.get_derivacao()
+					incluir_epsilon = True
+					for simbolo in derivacao:
+						if isinstance(simbolo, Vt):
+							if simbolo not in firsts[vn]:
+								firsts[vn].add(simbolo)
+								houve_mudanca = True
+							incluir_epsilon = False
+							break
+						elif isinstance(simbolo, Vn):
+							if simbolo not in firsts:
+								firsts[simbolo] = set()
+							if (firsts[simbolo] - epsilon_set) - firsts[vn]:  # Se a diferença entre os firsts não for nula
+								firsts[vn] = firsts[vn].union(firsts[simbolo] - epsilon_set)
+								houve_mudanca = True
+							if epsilon_vt not in firsts[simbolo]:
+								incluir_epsilon = False
+								break
+					if incluir_epsilon and epsilon_vt not in firsts[vn]:
+						firsts[vn].add(Vt(epsilon))
+						houve_mudanca = True
+		self.__first_memo = firsts
+		return self.__first_memo
 
-	def first_nt(self, simb):
-		pass
-		# TODO
-		# Deve:
-		#   - Verificar se vn pertence à Vn
-		#   - Retornar o conjunto de First-NT de vn
+	def first_producao(self, producao):
+		epsilon_vt = Vt(epsilon)
+		epsilon_set = set([epsilon_vt])
+		first_vns = self.first()
+		first = set()
+		inclui_epsilon = True
+		derivacao = producao.get_derivacao()
+		for simbolo in derivacao:
+			if isinstance(simbolo, Vt):
+				first.add(simbolo)
+				inclui_epsilon = False
+				break
+			elif isinstance(simbolo, Vn):
+				firsts_do_vn = first_vns[simbolo]
+				first = first.union(firsts_do_vn - epsilon_set)
+				if epsilon_vt not in firsts_do_vn:
+					inclui_epsilon = False
+					break
+		if inclui_epsilon:
+			first.add(epsilon_vt)
+		return first
+
+	def follow(self):
+		if self.__follow_memo is not None:
+			return self.__follow_memo
+
+		#final_de_sentenca = Vt(simb_final_de_sentenca)
+		final_de_sentenca = simb_final_de_sentenca
+		epsilon_vt = Vt(epsilon)
+		epsilon_set = set([epsilon_vt])
+		follows = OrderedDict()
+
+		# Passo 1
+		for vn in self._conjunto_producoes:
+			follows[vn] = set()
+			if vn == self._vn_inicial:
+				follows[vn].add(final_de_sentenca)
+
+		# Passo 2
+		first_betas = {}
+		for vn in self._nao_terminais:
+			for producao in self._conjunto_producoes[vn]:
+				derivacao = producao.get_derivacao()
+				for i in range(0, len(derivacao)):
+					if i < len(derivacao) - 1:
+						simbolo = derivacao[i]
+						if isinstance(simbolo, Vn):
+							beta = Producao(producao.get_gerador(), derivacao[i+1:])
+							if beta not in first_betas:
+								first_betas[beta] = self.first_producao(beta)
+							follows[simbolo] = follows[simbolo].union(first_betas[beta] - epsilon_set)
+
+		# Passo 3
+		houve_mudanca = True
+		while houve_mudanca:
+			houve_mudanca = False
+			for vn in self._nao_terminais:
+				follow_gerador = follows[vn]
+				for producao in self._conjunto_producoes[vn]:
+					derivacao = producao.get_derivacao()
+					for i in range(0, len(derivacao)):
+						simbolo = derivacao[i]
+						if isinstance(simbolo, Vn):
+							if i < len(derivacao) - 1:
+								beta = Producao(producao.get_gerador(), derivacao[i + 1:])
+							else:
+								beta = Producao(producao.get_gerador(), [epsilon_vt])
+							if beta not in first_betas:
+								first_betas[beta] = self.first_producao(beta)
+
+							if epsilon_vt in first_betas[beta]:
+								novo_follow = follows[simbolo].union(follow_gerador)
+								if follows[simbolo].symmetric_difference(novo_follow):
+									follows[simbolo] = novo_follow
+									houve_mudanca = True
+
+		self.__follow_memo = follows
+		return self.__follow_memo
+
+	def first_nt(self):
+		if self.__first_nt_memo is not None:
+			return self.__first_nt_memo
+
+		firsts_nt = OrderedDict()
+		firsts = self.first()
+		epsilon_vt = Vt(epsilon)
+		houve_mudanca = True
+		while houve_mudanca:
+			houve_mudanca = False
+			for vn in self._conjunto_producoes:
+				if vn not in firsts_nt:
+					firsts_nt[vn] = set()
+				for producao in self._conjunto_producoes[vn]:
+					derivacao = producao.get_derivacao()
+					for simbolo in derivacao:
+						if isinstance(simbolo, Vn):
+							firsts_nt[vn].add(simbolo)
+							if epsilon_vt not in firsts[simbolo]:
+								break
+						else:
+							break
+
+		self.__first_nt_memo = firsts_nt
+		return self.__first_nt_memo
 
 	def esta_fatorada(self):
-		for vn in self._conjunto_producoes:
+		for vn in self._nao_terminais:
 			firsts_das_derivacoes = set()
-			for derivacao in self._conjunto_producoes[vn]:
-				first_dessa_derivacao = self.first(str(derivacao))
-				if firsts_das_derivacoes & first_dessa_derivacao:  # intersecção não é nula:
+			for producao in self._conjunto_producoes[vn]:
+				first_producao = self.first_producao(producao)
+				if firsts_das_derivacoes.intersection(first_producao):
 					return False
+				else:
+					firsts_das_derivacoes = firsts_das_derivacoes.union(first_producao)
 		return True
 
 	def eh_fatoravel_em_n_passos(self, n):
