@@ -18,10 +18,10 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def __init__(self, nome, entrada):
 		super(GramaticaLivreDeContexto, self).__init__(TipoElemento.GLC, nome)
-		self.__conjunto_producoes = OrderedDict()
-		self.__terminais = set()
-		self.__nao_terminais = set()
-		self.__vn_inicial = None
+		self._conjunto_producoes = OrderedDict()
+		self._terminais = set()
+		self._nao_terminais = set()
+		self._vn_inicial = None
 		self.__parse(entrada)
 		self.__nf = None
 		self.__vi = None
@@ -34,14 +34,14 @@ class GramaticaLivreDeContexto(Elemento):
 		entrada_linhas = entrada.splitlines()
 		num_linha = 0
 		for linha in entrada_linhas:
-			if linha: # Se a linha não for em branco
+			if linha:  # Se a linha não for em branco
 				linha_limpa = re.sub("\s+", " ", linha)
 				if simb_derivacao in linha_limpa:
 					producao_lista = linha_limpa.split(simb_derivacao)
 					if len(producao_lista) <= 2:
 						produtor = self.__obtem_produtor(producao_lista[0], num_linha)
 						if not inicial_definido:
-							self.__vn_inicial = produtor
+							self._vn_inicial = produtor
 							inicial_definido = True
 						producoes = self.__obtem_producoes(produtor, producao_lista[1], num_linha)
 						for producao in producoes:
@@ -55,8 +55,8 @@ class GramaticaLivreDeContexto(Elemento):
 			raise ParsingError(": existem símbolos de Vn que não tiveram suas produções definidas")
 
 	def __existe_vn_indefinido(self):
-		for vn in self.__nao_terminais:
-			if vn not in self.__conjunto_producoes:
+		for vn in self._nao_terminais:
+			if vn not in self._conjunto_producoes:
 				return True
 		return False
 
@@ -72,7 +72,7 @@ class GramaticaLivreDeContexto(Elemento):
 				if simbolo not in alfabeto_nao_terminais_seguintes:
 					raise ParsingError(": símbolo inesperado na linha " + str(linha))
 		vn = Vn(produtor_limpo)
-		self.__nao_terminais.add(vn)
+		self._nao_terminais.add(vn)
 		return vn
 
 	def __obtem_producoes(self, gerador, producoes, linha):
@@ -97,25 +97,25 @@ class GramaticaLivreDeContexto(Elemento):
 			if primeiro_simbolo in alfabeto_nao_terminais_inicial:
 				vn = Vn(unidade)
 				unidades_resultantes.append(vn)
-				self.__nao_terminais.add(vn)
+				self._nao_terminais.add(vn)
 			elif primeiro_simbolo in (alfabeto_terminais + epsilon):
 				vt = Vt(unidade)
 				unidades_resultantes.append(vt)
-				self.__terminais.add(vt)
+				self._terminais.add(vt)
 			else:
 				raise ParsingError(": símbolo de Vt ou Vn esperado mas não encontrado")
 		return unidades_resultantes
 
 	def __adiciona_producao(self, vn, producao):
-		if vn not in self.__conjunto_producoes:
-			self.__conjunto_producoes[vn] = set()
-		self.__conjunto_producoes[vn].add(producao)
+		if vn not in self._conjunto_producoes:
+			self._conjunto_producoes[vn] = set()
+		self._conjunto_producoes[vn].add(producao)
 
 	def vn_pertence(self, vn):
-		return vn in self.__nao_terminais
+		return vn in self._nao_terminais
 
 	def vt_pertence(self, vt):
-		return vt in self.__terminais
+		return vt in self._terminais
 
 	def remove_recursao_esq(self):
 		if self.existe_recursao_esq():
@@ -176,8 +176,8 @@ class GramaticaLivreDeContexto(Elemento):
 			#   - Retorna a gramática e os conjuntos, nessa ordem
 
 	def existe_producoes_simples(self):
-		for vn in self.__conjunto_producoes:
-			for derivacao in self.__conjunto_producoes[vn]:
+		for vn in self._conjunto_producoes:
+			for derivacao in self._conjunto_producoes[vn]:
 				if derivacao.eh_simples():
 					return True
 		return False
@@ -203,7 +203,7 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def existe_inferteis(self):
 		nf = self.obtem_nf()
-		return bool(self.__nao_terminais.difference(nf)) # Retorna falso se a diferença resulta em um conjunto vazio
+		return bool(self._nao_terminais.difference(nf)) # Retorna falso se a diferença resulta em um conjunto vazio
 
 	def obtem_nf(self):
 		if self.__nf is not None:
@@ -212,18 +212,18 @@ class GramaticaLivreDeContexto(Elemento):
 		nf = set()
 		nf_atual = set()
 		continua = True
-		nt = set(self.__nao_terminais)
+		nt = set(self._nao_terminais)
 
 		while continua:
 			nf = set(nf_atual)
 			for A in nt:
 				adicionado = False
-				producoes = self.__conjunto_producoes[A]
+				producoes = self._conjunto_producoes[A]
 				for x in producoes:
 					if not adicionado:
 						prod = x.get_derivacao()
 						for simbolo in prod:
-							if any(simbolo not in nf_atual and simbolo not in self.__terminais for simbolo in prod):
+							if any(simbolo not in nf_atual and simbolo not in self._terminais for simbolo in prod):
 								break
 							else:
 								nf_atual.add(A)
@@ -252,7 +252,7 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def existe_inalcancavel(self):
 		vi = self.obtem_vi()
-		return bool(self.__nao_terminais.difference(vi))  # Retorna falso se a diferença resulta em um conjunto vazio
+		return bool(self._nao_terminais.difference(vi))  # Retorna falso se a diferença resulta em um conjunto vazio
 
 	def obtem_vi(self):
 		if self.__vi is not None:
@@ -260,17 +260,17 @@ class GramaticaLivreDeContexto(Elemento):
 
 		vi = set()
 		vi_atual = set()
-		vi_atual.add(self.__vn_inicial)
+		vi_atual.add(self._vn_inicial)
 		visitados = set()
 
 		while vi != vi_atual:
 			vi = set(vi_atual)
 			for X in set(vi - visitados):
 				visitados.add(X)
-				producoes = self.__conjunto_producoes[X]
+				producoes = self._conjunto_producoes[X]
 				for y in producoes:
 					prod = y.get_derivacao()
-					vi_atual = vi_atual.union(set(self.__nao_terminais.intersection(set(prod))))
+					vi_atual = vi_atual.union(set(self._nao_terminais.intersection(set(prod))))
 
 		self.__vi = vi
 		return self.__vi
@@ -288,7 +288,7 @@ class GramaticaLivreDeContexto(Elemento):
 	'''
 	def finitude(self):
 		ferteis = self.obtem_nf()
-		if self.__vn_inicial not in ferteis:
+		if self._vn_inicial not in ferteis:
 			return 0
 		elif self.__infinita():
 			return 2
@@ -298,26 +298,26 @@ class GramaticaLivreDeContexto(Elemento):
 	def __infinita(self):
 		simbolos_uteis = self.obtem_nf().intersection(self.obtem_vi())
 		for A in simbolos_uteis:
-			producoes = self.__conjunto_producoes[A]
+			producoes = self._conjunto_producoes[A]
 			for x in producoes:
 				prod = x.get_derivacao()
-				contem_terminal = any(simbolo in self.__terminais for simbolo in prod)
+				contem_terminal = any(simbolo in self._terminais for simbolo in prod)
 				if A in prod and contem_terminal:
 					return True
 
-				prox_deriv = set(self.__nao_terminais.intersection(set(prod)))
+				prox_deriv = set(self._nao_terminais.intersection(set(prod)))
 				visitados = set([A])
 				while any(simbolo not in visitados for simbolo in prox_deriv):
 					for y in prox_deriv:
 						visitados.add(y)
-						producoes = self.__conjunto_producoes[y]
+						producoes = self._conjunto_producoes[y]
 						for z in producoes:
 							prod = z.get_derivacao()
 							if A in prod:
-								contem_terminal = contem_terminal or any(simbolo in self.__terminais for simbolo in prod)
+								contem_terminal = contem_terminal or any(simbolo in self._terminais for simbolo in prod)
 								if contem_terminal:
 									return True
-					prox_deriv = set(self.__nao_terminais.intersection(set(prod)))
+					prox_deriv = set(self._nao_terminais.intersection(set(prod)))
 
 		return False
 
@@ -331,10 +331,10 @@ class GramaticaLivreDeContexto(Elemento):
 		houve_mudanca = True
 		while houve_mudanca:
 			houve_mudanca = False
-			for vn in self.__conjunto_producoes:
+			for vn in self._conjunto_producoes:
 				if vn not in firsts:
 					firsts[vn] = set()
-				for producao in self.__conjunto_producoes[vn]:
+				for producao in self._conjunto_producoes[vn]:
 					derivacao = producao.get_derivacao()
 					incluir_epsilon = True
 					for simbolo in derivacao:
@@ -392,15 +392,15 @@ class GramaticaLivreDeContexto(Elemento):
 		follows = OrderedDict()
 
 		# Passo 1
-		for vn in self.__conjunto_producoes:
+		for vn in self._conjunto_producoes:
 			follows[vn] = set()
-			if vn == self.__vn_inicial:
+			if vn == self._vn_inicial:
 				follows[vn].add(final_de_sentenca)
 
 		# Passo 2
 		first_betas = {}
-		for vn in self.__nao_terminais:
-			for producao in self.__conjunto_producoes[vn]:
+		for vn in self._nao_terminais:
+			for producao in self._conjunto_producoes[vn]:
 				derivacao = producao.get_derivacao()
 				for i in range(0, len(derivacao)):
 					if i < len(derivacao) - 1:
@@ -415,9 +415,9 @@ class GramaticaLivreDeContexto(Elemento):
 		houve_mudanca = True
 		while houve_mudanca:
 			houve_mudanca = False
-			for vn in self.__nao_terminais:
+			for vn in self._nao_terminais:
 				follow_gerador = follows[vn]
-				for producao in self.__conjunto_producoes[vn]:
+				for producao in self._conjunto_producoes[vn]:
 					derivacao = producao.get_derivacao()
 					for i in range(0, len(derivacao)):
 						simbolo = derivacao[i]
@@ -448,10 +448,10 @@ class GramaticaLivreDeContexto(Elemento):
 		houve_mudanca = True
 		while houve_mudanca:
 			houve_mudanca = False
-			for vn in self.__conjunto_producoes:
+			for vn in self._conjunto_producoes:
 				if vn not in firsts_nt:
 					firsts_nt[vn] = set()
-				for producao in self.__conjunto_producoes[vn]:
+				for producao in self._conjunto_producoes[vn]:
 					derivacao = producao.get_derivacao()
 					for simbolo in derivacao:
 						if isinstance(simbolo, Vn):
@@ -465,9 +465,9 @@ class GramaticaLivreDeContexto(Elemento):
 		return self.__first_nt_memo
 
 	def esta_fatorada(self):
-		for vn in self.__nao_terminais:
+		for vn in self._nao_terminais:
 			firsts_das_derivacoes = set()
-			for producao in self.__conjunto_producoes[vn]:
+			for producao in self._conjunto_producoes[vn]:
 				first_producao = self.first_producao(producao)
 				if firsts_das_derivacoes.intersection(first_producao):
 					return False
@@ -488,12 +488,12 @@ class GramaticaLivreDeContexto(Elemento):
 
 	def __str__(self):
 		retorno = ""
-		for produtor in self.__conjunto_producoes:
+		for produtor in self._conjunto_producoes:
 			linha = str(produtor) + " " + simb_derivacao
-			for producao in self.__conjunto_producoes[produtor]:
+			for producao in self._conjunto_producoes[produtor]:
 				linha += str(producao) + " |"
 			linha = linha[0:-2] + "\n"
-			if produtor == self.__vn_inicial:
+			if produtor == self._vn_inicial:
 				retorno = linha + retorno
 			else:
 				retorno += linha
