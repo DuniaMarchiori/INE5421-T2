@@ -9,18 +9,15 @@ from Source.Model.GLC.GramaticaLivreDeContexto import *
 '''
 class GLCEditavel(GramaticaLivreDeContexto):
 
-	def __init__(self, nome=None, base=None):
-		if nome is None:
-			nome_final = base.get_nome()
-		else:
-			nome_final = nome
-
+	def __init__(self, base=None):
 		if base is None:
 			base_final = ""
+			nome = ""
 		else:
 			base_final = base.to_string()
+			nome = base.get_nome()
 
-		super(GLCEditavel, self).__init__(nome_final, base_final)
+		super(GLCEditavel, self).__init__(nome, base_final)
 
 	def set_inicial(self, novo_inicial):
 		if not isinstance(novo_inicial, Vn) or not self.vn_pertence(novo_inicial):
@@ -35,18 +32,36 @@ class GLCEditavel(GramaticaLivreDeContexto):
 		producoes = self.__conjunto_producoes[gerador]
 		producoes.remove(producao)
 		if not producoes:
-			self.__conjunto_producoes.pop(gerador, None)
+			self._conjunto_producoes.pop(gerador, None)
 
 	def adiciona_producao(self, gerador, producao):
 		if not isinstance(producao, Producao) or not self.vn_pertence(gerador) or gerador != producao.get_gerador():
 			raise Exception("Erro Interno")
 
 		if not self.vn_pertence(gerador):
-			self.__conjunto_producoes[gerador] = set()
-			self.__nao_terminais.add(gerador)
-		self.__conjunto_producoes[gerador].add(producao)
+			self._conjunto_producoes[gerador] = set()
+			self._nao_terminais.add(gerador)
+		self._conjunto_producoes[gerador].add(producao)
 		for unidade in producao.get_derivacao():
-			self.__terminais.add(unidade)
+			self._terminais.add(unidade)
+
+	def remove_vn(self, vn):
+		if not isinstance(vn, Vn) or not self.vn_pertence(vn):
+			raise Exception("Erro Interno")
+
+		self._conjunto_producoes.pop(vn, None)
+
+		for gerador in self._conjunto_producoes:
+			producoes = self._conjunto_producoes[gerador]
+			producoes_a_remover = []
+			for producao in producoes:
+				derivacao = producao.get_derivacao()
+				for simbolo in derivacao:
+					if simbolo == vn:
+						producoes_a_remover.append(producao)
+						break
+			for producao_a_remover in producoes_a_remover:
+				producoes.remove(producao_a_remover)
 
 	def obter_glc_padrao(self):
 		return GramaticaLivreDeContexto(self.get_nome(), self.to_string())
