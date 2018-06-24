@@ -144,7 +144,7 @@ class Controller:
 		try:
 			# TODO ver como vai mostrar o conjunto (na)
 			glc_criada, na = self.__model.remover_simples(elemento)
-			self.__adicionar_multiplos_elementos(glc_criada)
+			self.__adicionar_multiplos_elementos([glc_criada])
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
 		except:
@@ -174,7 +174,7 @@ class Controller:
 		try:
 			# TODO ver como vai mostrar o conjunto (nf)
 			glc_criada, nf = self.__model.remover_inferteis(elemento)
-			self.__adicionar_multiplos_elementos(glc_criada)
+			self.__adicionar_multiplos_elementos([glc_criada])
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
 		except:
@@ -189,7 +189,7 @@ class Controller:
 		try:
 			# TODO ver como vai mostrar o conjunto (vi)
 			glc_criada, vi = self.__model.remover_inalcancaveis(elemento)
-			self.__adicionar_multiplos_elementos(glc_criada)
+			self.__adicionar_multiplos_elementos([glc_criada])
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
 		except:

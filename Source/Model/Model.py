@@ -152,6 +152,8 @@ class Model:
     def remover_simples(self, gramatica):
         if not gramatica.existe_producoes_simples():
             raise OperacaoError(" a gramática não possui produções simples")
+        elif not gramatica.eh_epsilon_livre():
+            raise OperacaoError(" a gramática deve ser epsilon-livre")
         else:
             nova_gramatica, na = gramatica.remove_simples()
             return nova_gramatica, na

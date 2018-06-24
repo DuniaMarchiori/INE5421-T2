@@ -60,4 +60,4 @@ class Producao:
 		return isinstance(other, Producao) and hash(self) == hash(other)
 
 	def __hash__(self):
-		return hash(str(self.__gerador) + str(self))
+		return hash(str(self))

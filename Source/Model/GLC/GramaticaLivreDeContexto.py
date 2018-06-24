@@ -10,6 +10,7 @@ from Source.Model.Elemento import *
 
 from collections import OrderedDict
 import re
+from itertools import *
 
 '''
 	Classe que representa uma gramática livre de contexto.
@@ -25,6 +26,7 @@ class GramaticaLivreDeContexto(Elemento):
 		self.__parse(entrada)
 		self.__nf = None
 		self.__vi = None
+		self.__ne = None
 		self.__first_memo = None
 		self.__follow_memo = None
 		self.__first_nt_memo = None
@@ -143,37 +145,115 @@ class GramaticaLivreDeContexto(Elemento):
 		if self.eh_epsilon_livre():
 			raise OperacaoError(" a gramática já é epsilon-livre")
 		else:
-			pass
-			# TODO
-			# Fazer:
-			#   - (Lembrete: Utilizar classe GLCEditavel pra construir a GLC resultante)
-			#   - Obtem o conjunto Ne com o método self.obtem_ne()
-			#   - Cria uma nova GLC epsilon-livre usando o algoritmo com base no conjunto.
-			#   - Retorna a gramática e o conjunto, nessa ordem
+			sem_epsilon = GLCEditavel(self)
+			ne = self.obtem_ne()  # Símbolos que derivam &
+
+			for A in self._nao_terminais:
+				producoes = self._conjunto_producoes[A]
+				for x in producoes:
+					indices = []
+					prod = x.get_derivacao()
+					if Vt("&") in prod:
+						sem_epsilon.remove_producao(A, x)
+					else:
+						for y in prod:
+							if y in ne:
+								indices.append(prod.index(y))
+						if len(prod) > 1 and len(indices) > 0:
+							powerset = list(self.__powerset(indices))
+							powerset.pop(0)  # Remove conjunto vazio
+							for item in powerset:
+								nova_prod = list(prod)
+								index = ''.join(str(s) for s in list(item))
+								index = int(index)
+								nova_prod.pop(index)
+								sem_epsilon.adiciona_producao(A, Producao(A, nova_prod))
+
+		if self._vn_inicial in ne:
+			prod = Producao(self._vn_inicial, [Vt("&")])
+			sem_epsilon.adiciona_producao(self._vn_inicial, prod)
+
+		glc = sem_epsilon.obter_glc_padrao(self.get_nome() + " (& livre)")
+		return glc, ne
 
 	def eh_epsilon_livre(self):
-		pass
-		# TODO
-		# Deve:
-		#   - Verificar se é &-livre (retorna True ou False)
+		ne = self.obtem_ne()
+		return not bool(ne)  # bool() retorna falso o conjunto for vazio
 
 	def obtem_ne(self):
-		pass
-		# TODO
-		# Deve:
-		#   - Retornar o conjunto Ne utilizado no método de transformação em &-livre
+		if self.__ne is not None:
+			return self.__ne
+
+		ne = set()
+
+		# Não terminais que derivam & diretamente
+		for A in self._nao_terminais:
+			producoes = self._conjunto_producoes[A]
+			for prod in producoes:
+				deriv = prod.get_derivacao()
+				if len(deriv) == 1:
+					x = deriv[0]
+					if isinstance(x, Vt) and x.eh_epsilon():
+						ne.add(A)
+						break
+
+		# Não terminais que derivam & indiretamente
+		ne_atual = ()
+		while ne_atual != ne:
+			ne_atual = set(ne)
+			for A in self._nao_terminais:
+				i = 0
+				producoes = self._conjunto_producoes[A]
+				for x in producoes:
+					prod = x.get_derivacao()
+					for y in prod:
+						if y in ne_atual:
+							i += 1  # Conta quantos simbolos de uma produção derivam &
+					if i == len(prod):  # Se todos derivam &, então A deriva & indiretamente
+						ne.add(A)
+
+		self.__ne = ne
+		return self.__ne
+
+	def __powerset(self, lista):
+		"powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+		return chain.from_iterable(combinations(lista, r) for r in range(len(lista) + 1))
 
 	def remove_simples(self):
 		if not self.existe_producoes_simples():
 			raise OperacaoError(" a gramática não possui nenhuma produção simples")
 		else:
-			pass
 			# TODO
-			# Fazer:
-			#   - (Lembrete: Utilizar classe GLCEditavel pra construir a GLC resultante)
-			#   - Obtem os conjuntos NA com o método self.obtem_na()
-			#   - Cria uma nova GLC sem produções simples usando o algoritmo, com base nos conjuntos.
-			#   - Retorna a gramática e os conjuntos, nessa ordem
+			na = self.obtem_na()
+
+			sem_simples = GLCEditavel(self)
+			# Remove produções simples
+			for A in sem_simples._conjunto_producoes:
+				producoes = list(sem_simples._conjunto_producoes[A])
+				for derivacao in producoes:
+					if derivacao.eh_simples():
+						sem_simples.remove_producao(A, derivacao)
+
+			# Adiciona produções
+			for A in sem_simples._conjunto_producoes:
+				for B in set(na[A]) - set([A]):
+					for prod in sem_simples._conjunto_producoes[B]:
+						sem_simples.adiciona_producao(A, Producao(A, list(prod.get_derivacao())))
+
+			# Atualiza produções
+			houve_mudança = True
+			while houve_mudança:
+				houve_mudança = False
+				for A in sem_simples._conjunto_producoes:
+					for B in set(na[A]) - set([A]):
+						diff = set(sem_simples._conjunto_producoes[B]) - set(sem_simples._conjunto_producoes[A])
+						if len(diff) > 0:
+							for prod in diff:
+								sem_simples.adiciona_producao(A, Producao(A, list(prod.get_derivacao())))
+								houve_mudança = True
+
+			glc = sem_simples.obter_glc_padrao(self.get_nome() + " (sem prod. simples)")
+			return glc, na
 
 	def existe_producoes_simples(self):
 		for vn in self._conjunto_producoes:
@@ -183,23 +263,45 @@ class GramaticaLivreDeContexto(Elemento):
 		return False
 
 	def obtem_na(self):
-		pass
-		# TODO
-		# Deve:
-		#   - Retornar os conjuntos NA pra cada A E Vn, utilizados no método de remoção de produções simples
-		#       - Esses NA podem ser representados por um dicionário em que cada chave 'x' é o conjunto Nx por exemplo
+		n = dict()
+
+		# Inicializa conjuntos
+		for A in self._nao_terminais:
+			n[A] = [A]
+
+		# Derivações diretas (A deriva B)
+		for A in self._conjunto_producoes:
+			for derivacao in self._conjunto_producoes[A]:
+				if derivacao.eh_simples():
+					n[A].extend(derivacao.get_derivacao())
+
+		# Atualização das derivações (A deriva B que deriva C, logo, A deriva C)
+		houve_mudança = True
+		while houve_mudança:
+			houve_mudança = False
+			for A in self._conjunto_producoes:
+				for prod in self._conjunto_producoes[A]:
+					if prod.eh_simples():
+						derivacao = prod.get_derivacao()[0]
+						diff = set(n[derivacao]) - set(n[A])
+						if len(diff) > 0:
+							n[A].extend(diff)
+							houve_mudança = True
+
+		return n
 
 	def remove_inferteis(self):
 		if not self.existe_inferteis():
 			raise OperacaoError(" a gramática não possui nenhuma produção infértil")
 		else:
-			pass
-			# TODO
-			# Fazer:
-			#   - (Lembrete: Utilizar classe GLCEditavel pra construir a GLC resultante)
-			#   - Obtem o conjunto NF com o método self.obtem_nf()
-			#   - Cria uma nova GLC sem produções inférteis usando o algoritmo, com base no conjunto.
-			#   - Retorna a gramática e o conjunto, nessa ordem
+			sem_inferteis = GLCEditavel(self)
+			nf = self.obtem_nf()  # Símbolos férteis
+			inferteis = self._nao_terminais.difference(nf)
+			for simbolo in inferteis:
+				sem_inferteis.remove_vn(simbolo)
+
+			glc = sem_inferteis.obter_glc_padrao(self.get_nome() + " (sem inférteis)")
+			return glc, inferteis
 
 	def existe_inferteis(self):
 		nf = self.obtem_nf()
@@ -242,13 +344,14 @@ class GramaticaLivreDeContexto(Elemento):
 		if not self.existe_inalcancavel():
 			raise OperacaoError(" a gramática não possui nenhuma produção inalcançável")
 		else:
-			pass
-			# TODO
-			# Fazer:
-			#   - (Lembrete: Utilizar classe GLCEditavel pra construir a GLC resultante)
-			#   - Obtem o conjunto Vi com o método self.obtem_vi()
-			#   - Cria uma nova GLC sem produções inalcançáveis usando o algoritmo, com base no conjunto.
-			#   - Retorna a gramática e o conjunto, nessa ordem
+			sem_inalc = GLCEditavel(self)
+			vi = self.obtem_vi() # Símbolos alcançáveis
+			inalcancaveis = self._nao_terminais.difference(vi)
+			for simbolo in inalcancaveis:
+				sem_inalc.remove_vn(simbolo)
+
+			glc = sem_inalc.obter_glc_padrao(self.get_nome() + " (sem inalcançáveis)")
+			return glc, inalcancaveis
 
 	def existe_inalcancavel(self):
 		vi = self.obtem_vi()
