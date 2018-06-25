@@ -274,10 +274,13 @@ class Controller:
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
 			n = int(n)
-			fatoravel = self.__model.verificar_fatoravel(elemento, n)
+			fatoravel, glc_criada = self.__model.verificar_fatoravel(elemento, n)
 			if fatoravel:
 				self.__view.mostrar_aviso("Esta GLC é fatorável em " + str(n) + " passos.", titulo="Fatorável")
+				self.__adicionar_unico_elemento(glc_criada)
 			else:
 				self.__view.mostrar_aviso("Esta GLC não é fatorável em " + str(n) + " passos.", titulo="Fatorável")
+		except ValueError:
+			self.__view.mostrar_aviso("N deve ser um número inteiro.")
 		except:
 			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")

@@ -25,6 +25,20 @@ class GLCEditavel(GramaticaLivreDeContexto):
 
 		self.__vn_inicial = novo_inicial
 
+	def adiciona_nao_terminal(self, nt):
+		if not isinstance(nt, Vn) or self.vn_pertence(nt):
+			raise Exception("Erro Interno")
+		self._nao_terminais.add(nt)
+		self._conjunto_producoes[nt] = set()
+
+	def novo_simbolo(self, letra):
+		i = 1
+		novo = letra + str(i)
+		while self.vn_pertence(Vn(novo)):
+			i += 1
+			novo = letra + str(i)
+		return novo
+
 	def remove_producao(self, gerador, producao):
 		if not isinstance(producao, Producao) or not self.vn_pertence(gerador):
 			raise Exception("Erro Interno")

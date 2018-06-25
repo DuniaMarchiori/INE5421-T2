@@ -296,6 +296,8 @@ class Model:
         \:param n é o numero de passos da tentativa de fatoração.
     '''
     def verificar_fatoravel(self, gramatica, n):
+        if gramatica.existe_recursao_esq():
+            raise OperacaoError(" a gramática possui derivações à esquerda")
         if n > 0:
             return gramatica.eh_fatoravel_em_n_passos(n)
         else:
