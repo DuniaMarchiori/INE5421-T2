@@ -296,4 +296,7 @@ class Model:
         \:param n é o numero de passos da tentativa de fatoração.
     '''
     def verificar_fatoravel(self, gramatica, n):
-        return gramatica.eh_fatoravel_em_n_passos(n)
+        if n > 0:
+            return gramatica.eh_fatoravel_em_n_passos(n)
+        else:
+            raise OperacaoError(" n deve ser um inteiro maior que zero")

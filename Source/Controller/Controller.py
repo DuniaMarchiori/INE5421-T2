@@ -273,6 +273,7 @@ class Controller:
 	def cb_propriedade_fatoravel(self, indice, n):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
+			n = int(n)
 			fatoravel = self.__model.verificar_fatoravel(elemento, n)
 			if fatoravel:
 				self.__view.mostrar_aviso("Esta GLC é fatorável em " + str(n) + " passos.", titulo="Fatorável")

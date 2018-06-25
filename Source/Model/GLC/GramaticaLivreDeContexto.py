@@ -579,12 +579,139 @@ class GramaticaLivreDeContexto(Elemento):
 		return True
 
 	def eh_fatoravel_em_n_passos(self, n):
-		pass
-		# TODO
-		# Deve:
-		#   - (Lembrete: Utilizar classe GLCEditavel pra construir cada passo da GLC durante a fatoração)
-		#   - Tentar fatorar em no máximo n passos
-		#   - Só precisa retornar True ou False por enquanto
+		# TODo
+
+		if self.esta_fatorada():
+			raise OperacaoError(" a gramática já está fatorada")
+		else:
+			i = 0
+			fatorada = GLCEditavel(self)
+			nao_terminais = []
+			nao_terminais.extend(self._nao_terminais)
+			while nao_terminais:
+				nt = nao_terminais[0]
+				if not self.__nt_esta_fatorado(fatorada, nt):
+					if i < n:
+						producoes = list(fatorada._conjunto_producoes[nt])
+						j = 0
+						firsts = []
+						while j < len(producoes)-1:
+							k = j + 1
+							producao = producoes[j]
+							first_prod = fatorada.first_producao(producao)
+							if not first_prod in firsts:  # Se esse first já não foi analizado
+								outras_prod = []
+								while k < len(producoes):
+									prod = producoes[k]
+									first_outra_prod = fatorada.first_producao(prod)
+									if first_outra_prod not in firsts:
+										intersec = first_prod.intersection(first_outra_prod)
+										if intersec:
+											firsts.extend(intersec)
+											outras_prod.append(prod)
+									k += 1
+								if outras_prod:
+									todas_producoes = list(set(outras_prod).union(set([producao])))
+									for x in todas_producoes:
+										if len(x.get_derivacao()) > 0:
+											simb = x.get_derivacao()[0]
+											novas_prod = [x]
+											if not isinstance(simb, Vt):  # ND indireto
+												prox_deriv = []
+												prox_deriv.append(simb)
+												while not prox_deriv:
+													outro_simb = prox_deriv[0]
+													derivacao = fatorada._conjunto_producoes[outro_simb]
+
+													indexes = []  #indices das produções com o nao terminal
+													for y in novas_prod:
+														if y.get_derivacao()[0] == simb:
+															indexes.append(novas_prod.index(y))
+
+													for d in derivacao:
+														for i in indexes:
+															di = list(novas_prod[i].get_derivacao())
+															di.pop(0)
+															if Vt("&") in d.get_derivacao():
+																nova_deriv = di
+															nova_deriv = d.get_derivacao().extend(di)
+															novas_prod.append(Producao(novas_prod[i].get_gerador(), nova_deriv))
+															if isinstance(nova_deriv[0], Vn):
+																prox_deriv.append(nova_deriv[0])
+
+													prox_deriv.remove(outro_simb)
+
+									# Commom substring
+									a = 1
+									commom_subtring = str(todas_producoes[0])
+									while a < len(todas_producoes):
+										commom_subtring = self.__common_start(commom_subtring, str(todas_producoes[a]))
+										a += 1
+
+									# Fatora
+									simbolos = []
+									commom_subtring = commom_subtring.replace(" ", "")
+									for s in commom_subtring:
+										if s.islower():
+											simbolos.append(Vt(s))
+										else:
+											simbolos.append(Vn(s))
+									novo_nt = fatorada.__novo_simbolo(str(nt)[0])
+									novo_nt = Vn(novo_nt)
+									simbolos.append(novo_nt)
+									nao_terminais.append(novo_nt)
+									fatorada.adiciona_producao(nt, Producao(nt, simbolos))
+
+									# Produções do novo não terminal
+									fim_commom = len(commom_subtring)
+									producoes_novo_simbolo = set()
+									for p in todas_producoes:
+										resto_prod = p.get_derivacao()[fim_commom:]
+										if len(resto_prod) == 0:
+											resto_prod = [Vt("&")]
+										producoes_novo_simbolo.add(Producao(novo_nt, resto_prod))
+
+									# Remover producoes nao fatoradas anteriores
+									for p in todas_producoes:
+										fatorada.remove_producao(nt, p)
+
+									i += 1  # Um passo feito
+							j += 1
+					else:
+						return False
+				nao_terminais.remove(nt)
+			return True
+			glc = fatorada.obter_glc_padrao(self.get_nome() + "(fatorada)")
+
+
+	def __nt_esta_fatorado(self, gramaticac, nt):
+		firsts_das_derivacoes = set()
+		for producao in gramaticac._conjunto_producoes[nt]:
+			first_producao = self.first_producao(producao)
+			if firsts_das_derivacoes.intersection(first_producao):
+				return False
+			else:
+				firsts_das_derivacoes = firsts_das_derivacoes.union(first_producao)
+		return True
+
+	def __novo_simbolo(self, letra):
+		i = 1
+		novo = letra + str(i)
+		while self.vn_pertence(novo):
+			i += 1
+			novo = letra + str(i)
+		return novo
+
+	def __common_start(self, sa, sb):
+		""" returns the longest common substring from the beginning of sa and sb """
+		def _iter():
+			for a, b in zip(sa, sb):
+				if a == b:
+					yield a
+				else:
+					return
+
+		return ''.join(_iter())
 
 	def to_string(self):
 		return self.__str__()
