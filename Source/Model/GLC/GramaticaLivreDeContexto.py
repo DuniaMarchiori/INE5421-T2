@@ -27,6 +27,7 @@ class GramaticaLivreDeContexto(Elemento):
 		self.__nf = None
 		self.__vi = None
 		self.__ne = None
+		self.__na = None
 		self.__first_memo = None
 		self.__follow_memo = None
 		self.__first_nt_memo = None
@@ -153,7 +154,7 @@ class GramaticaLivreDeContexto(Elemento):
 				for x in producoes:
 					indices = []
 					prod = x.get_derivacao()
-					if Vt("&") in prod:
+					if prod.eh_epsilon():
 						sem_epsilon.remove_producao(A, x)
 					else:
 						for y in prod:
@@ -170,7 +171,7 @@ class GramaticaLivreDeContexto(Elemento):
 								sem_epsilon.adiciona_producao(A, Producao(A, nova_prod))
 
 		if self._vn_inicial in ne:
-			prod = Producao(self._vn_inicial, [Vt("&")])
+			prod = Producao(self._vn_inicial, [Vt(epsilon)])
 			sem_epsilon.adiciona_producao(self._vn_inicial, prod)
 
 		glc = sem_epsilon.obter_glc_padrao(self.get_nome() + " (& livre)")
@@ -223,7 +224,6 @@ class GramaticaLivreDeContexto(Elemento):
 		if not self.existe_producoes_simples():
 			raise OperacaoError(" a gramática não possui nenhuma produção simples")
 		else:
-			# TODO
 			na = self.obtem_na()
 
 			sem_simples = GLCEditavel(self)
@@ -263,6 +263,10 @@ class GramaticaLivreDeContexto(Elemento):
 		return False
 
 	def obtem_na(self):
+
+		if self.__na is not None:
+			return self.__na
+
 		n = dict()
 
 		# Inicializa conjuntos
@@ -287,8 +291,8 @@ class GramaticaLivreDeContexto(Elemento):
 						if len(diff) > 0:
 							n[A].extend(diff)
 							houve_mudança = True
-
-		return n
+		self.__na = n
+		return self.__na
 
 	def remove_inferteis(self):
 		if not self.existe_inferteis():
@@ -296,6 +300,10 @@ class GramaticaLivreDeContexto(Elemento):
 		else:
 			sem_inferteis = GLCEditavel(self)
 			nf = self.obtem_nf()  # Símbolos férteis
+
+			if self._vn_inicial not in nf:
+				raise OperacaoError(" a gramática representa uma linguagem vazia")
+
 			inferteis = self._nao_terminais.difference(nf)
 			for simbolo in inferteis:
 				sem_inferteis.remove_vn(simbolo)
