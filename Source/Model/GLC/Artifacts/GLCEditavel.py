@@ -18,18 +18,29 @@ class GLCEditavel(GramaticaLivreDeContexto):
 			nome = base.get_nome()
 
 		super(GLCEditavel, self).__init__(nome, base_final)
+		self._clear()
+
+	def _clear(self):
+		self._GramaticaLivreDeContexto__nf = None
+		self._GramaticaLivreDeContexto__vi = None
+		self._GramaticaLivreDeContexto__ne = None
+		self._GramaticaLivreDeContexto__first_memo = None
+		self._GramaticaLivreDeContexto__follow_memo = None
+		self._GramaticaLivreDeContexto__first_nt_memo = None
 
 	def set_inicial(self, novo_inicial):
 		if not isinstance(novo_inicial, Vn) or not self.vn_pertence(novo_inicial):
 			raise Exception("Erro Interno")
 
 		self.__vn_inicial = novo_inicial
+		self._clear()
 
 	def adiciona_nao_terminal(self, nt):
 		if not isinstance(nt, Vn) or self.vn_pertence(nt):
 			raise Exception("Erro Interno")
 		self._nao_terminais.add(nt)
 		self._conjunto_producoes[nt] = set()
+		self._clear()
 
 	def novo_simbolo(self, letra):
 		i = 1
@@ -47,6 +58,7 @@ class GLCEditavel(GramaticaLivreDeContexto):
 		producoes.remove(producao)
 		if not producoes:
 			self._conjunto_producoes.pop(gerador, None)
+		self._clear()
 
 	def adiciona_producao(self, gerador, producao):
 		if not isinstance(producao, Producao) or not self.vn_pertence(gerador) or gerador != producao.get_gerador():
@@ -58,6 +70,7 @@ class GLCEditavel(GramaticaLivreDeContexto):
 		self._conjunto_producoes[gerador].add(producao)
 		for unidade in producao.get_derivacao():
 			self._terminais.add(unidade)
+		self._clear()
 
 	# Esse método remove Vn's tanto da lista de produções quanto remove produções que contém ele.
 	def remove_vn(self, vn):
@@ -78,6 +91,7 @@ class GLCEditavel(GramaticaLivreDeContexto):
 						break
 			for producao_a_remover in producoes_a_remover:
 				producoes.remove(producao_a_remover)
+		self._clear()
 
 	def obter_glc_padrao(self, nome):
 		return GramaticaLivreDeContexto(nome, self.to_string())

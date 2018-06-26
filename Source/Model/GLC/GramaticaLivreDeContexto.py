@@ -589,7 +589,7 @@ class GramaticaLivreDeContexto(Elemento):
 			nao_terminais.extend(self._nao_terminais)
 			while nao_terminais:
 				nt = nao_terminais[0]
-				if not self.__nt_esta_fatorado(fatorada, nt):
+				if not fatorada.__nt_esta_fatorado(fatorada, nt):
 					if i < n:
 						producoes = list(fatorada._conjunto_producoes[nt])
 						j = 0
@@ -629,8 +629,8 @@ class GramaticaLivreDeContexto(Elemento):
 															indexes.append(novas_prod.index(y))
 
 													for d in derivacao:
-														for i in indexes:
-															di = list(novas_prod[i].get_derivacao())
+														for index in indexes:
+															di = list(novas_prod[index].get_derivacao())
 															di.pop(0)
 															if di is None:
 																di = []
@@ -638,15 +638,15 @@ class GramaticaLivreDeContexto(Elemento):
 															if not d.eh_epsilon() or di == list():
 																nova_deriv = list(d.get_derivacao())
 															nova_deriv.extend(di)
-															novas_prod.append(Producao(novas_prod[i].get_gerador(), nova_deriv))
+															novas_prod.append(Producao(novas_prod[index].get_gerador(), nova_deriv))
 															if isinstance(nova_deriv[0], Vn):
 																prox_deriv.append(nova_deriv[0])
 													v = 0
-													for i in indexes:
-														if i-v < 0:
+													for index in indexes:
+														if index-v < 0:
 															novas_prod.pop(0)
 														else:
-															novas_prod.pop(i-v)
+															novas_prod.pop(index-v)
 														v += 1
 													prox_deriv.remove(outro_simb)
 
