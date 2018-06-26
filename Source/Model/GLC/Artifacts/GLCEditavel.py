@@ -51,6 +51,7 @@ class GLCEditavel(GramaticaLivreDeContexto):
 			raise Exception("Erro Interno")
 
 		self._conjunto_producoes.pop(vn, None)
+		self._nao_terminais.remove(vn)
 
 		for gerador in self._conjunto_producoes:
 			producoes = self._conjunto_producoes[gerador]
