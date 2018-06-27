@@ -108,8 +108,17 @@ class Controller:
 	def cb_operacao_remover_recursao_esq(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar as recursoes
 			glcs_criadas, recursoes_diretas, recursoes_indiretas = self.__model.remover_recursao(elemento)
+			mensagem = "As recursões diretas são:\n"
+			for simbolo in recursoes_diretas:
+				for producao in recursoes_diretas[simbolo]:
+					mensagem += str(simbolo) + " ->" + str(producao) + "\n"
+			mensagem += "\nAs recursões indiretas são:\n"
+			for simbolo in recursoes_indiretas:
+				for producao in recursoes_indiretas[simbolo]:
+					mensagem += str(simbolo) + " ->" + str(producao) + "\n"
+
+			self.__view.mostrar_aviso(mensagem, titulo="Recursões")
 			self.__adicionar_multiplos_elementos(glcs_criadas)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
