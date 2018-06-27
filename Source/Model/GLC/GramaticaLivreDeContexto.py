@@ -224,18 +224,19 @@ class GramaticaLivreDeContexto(Elemento):
 						producoes_sem_recursao.append(producao)
 						break
 
-		sem_recursao_direta._conjunto_producoes[vn].clear()
-		novo_vn = Vn(sem_recursao_direta.novo_simbolo(vn.get_simbolos()[0]))
-		for producao in producoes_com_recursao:
-			nova_derivacao = producao.get_derivacao()[1:] + [novo_vn]
-			nova_producao = Producao(novo_vn, nova_derivacao)
-			sem_recursao_direta.adiciona_producao(novo_vn, nova_producao)
-		sem_recursao_direta.adiciona_producao(novo_vn, Producao(novo_vn, [Vt(epsilon)]))
+		if producoes_com_recursao:
+			sem_recursao_direta._conjunto_producoes[vn].clear()
+			novo_vn = Vn(sem_recursao_direta.novo_simbolo(vn.get_simbolos()[0]))
+			for producao in producoes_com_recursao:
+				nova_derivacao = producao.get_derivacao()[1:] + [novo_vn]
+				nova_producao = Producao(novo_vn, nova_derivacao)
+				sem_recursao_direta.adiciona_producao(novo_vn, nova_producao)
+			sem_recursao_direta.adiciona_producao(novo_vn, Producao(novo_vn, [Vt(epsilon)]))
 
-		for producao in producoes_sem_recursao:
-			nova_derivacao = producao.get_derivacao() + [novo_vn]
-			nova_producao = Producao(vn, nova_derivacao)
-			sem_recursao_direta.adiciona_producao(vn, nova_producao)
+			for producao in producoes_sem_recursao:
+				nova_derivacao = producao.get_derivacao() + [novo_vn]
+				nova_producao = Producao(vn, nova_derivacao)
+				sem_recursao_direta.adiciona_producao(vn, nova_producao)
 
 		return sem_recursao_direta
 
@@ -277,7 +278,7 @@ class GramaticaLivreDeContexto(Elemento):
 				for x in producoes:
 					indices = []
 					prod = x.get_derivacao()
-					if prod.eh_epsilon():
+					if x.eh_epsilon():
 						sem_epsilon.remove_producao(A, x)
 					else:
 						for y in prod:
@@ -294,15 +295,31 @@ class GramaticaLivreDeContexto(Elemento):
 								sem_epsilon.adiciona_producao(A, Producao(A, nova_prod))
 
 		if self._vn_inicial in ne:
-			prod = Producao(self._vn_inicial, [Vt(epsilon)])
-			sem_epsilon.adiciona_producao(self._vn_inicial, prod)
+			novo_inicial = Vn(sem_epsilon.novo_simbolo(self._vn_inicial.get_simbolos()[0]))
+			prod_s = Producao(novo_inicial, [self._vn_inicial])
+			sem_epsilon.adiciona_producao(novo_inicial, prod_s)
+			prod_epsilon = Producao(novo_inicial, [Vt(epsilon)])
+			sem_epsilon.adiciona_producao(novo_inicial, prod_epsilon)
+			sem_epsilon.set_inicial(novo_inicial)
 
 		glc = sem_epsilon.obter_glc_padrao(self.get_nome() + " (& livre)")
 		return glc, ne
 
 	def eh_epsilon_livre(self):
 		ne = self.obtem_ne()
-		return not bool(ne)  # bool() retorna falso o conjunto for vazio
+		if not ne:
+			return True
+		elif ne == set([self._vn_inicial]):
+			for vn in self._conjunto_producoes:
+				for producao in self._conjunto_producoes[vn]:
+					derivacao = producao.get_derivacao()
+					for simbolo in derivacao:
+						if simbolo == self._vn_inicial:
+							return False
+			return True
+		else:
+			return False
+
 
 	def obtem_ne(self):
 		if self.__ne is not None:
@@ -689,7 +706,14 @@ class GramaticaLivreDeContexto(Elemento):
 					derivacao = producao.get_derivacao()
 					for simbolo in derivacao:
 						if isinstance(simbolo, Vn):
+							if simbolo not in firsts_nt:
+								firsts_nt[simbolo] = set()
+							tam_anterior = len(firsts_nt[vn])
 							firsts_nt[vn].add(simbolo)
+							firsts_nt[vn] = firsts_nt[vn].union(firsts_nt[simbolo])
+							tam_depois = len(firsts_nt[vn])
+							if tam_depois > tam_anterior:
+								houve_mudanca = True
 							if epsilon_vt not in firsts[simbolo]:
 								break
 						else:
