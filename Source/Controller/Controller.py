@@ -323,5 +323,7 @@ class Controller:
 				self.__view.mostrar_aviso("Esta GLC não é fatorável em " + str(n) + " passos.", titulo="Fatorável")
 		except ValueError:
 			self.__view.mostrar_aviso("N deve ser um número inteiro.")
+		except OperacaoError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
