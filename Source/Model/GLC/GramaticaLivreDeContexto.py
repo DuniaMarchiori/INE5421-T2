@@ -172,7 +172,8 @@ class GramaticaLivreDeContexto(Elemento):
 						glc_sem_recursao.adiciona_producao(vni, producao)
 				glc_sem_recursao = glc_sem_recursao._remove_recursao_direta(vni)
 
-			return glc_sem_recursao, recursoes_diretas, recursoes_indiretas
+			glc_padrao = glc_sem_recursao.obter_glc_padrao(self.get_nome() + " (sem rec. esquerda)")
+			return glc_padrao, recursoes_diretas, recursoes_indiretas
 			pass
 			# TODO
 			# Fazer:
@@ -199,7 +200,7 @@ class GramaticaLivreDeContexto(Elemento):
 		derivacao_pos = derivacao[posicao_do_vn+1:]
 		producoes_geradas = []
 		for producao in self._conjunto_producoes[vn]:
-			nova_derivacao = derivacao_pre + producao.get_derivacao + derivacao_pos
+			nova_derivacao = derivacao_pre + producao.get_derivacao() + derivacao_pos
 			nova_producao = Producao(gerador, nova_derivacao)
 			producoes_geradas.append(nova_producao)
 
