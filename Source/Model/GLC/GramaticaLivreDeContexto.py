@@ -174,15 +174,6 @@ class GramaticaLivreDeContexto(Elemento):
 
 			glc_padrao = glc_sem_recursao.obter_glc_padrao(self.get_nome() + " (sem rec. esquerda)")
 			return glc_padrao, recursoes_diretas, recursoes_indiretas
-			pass
-			# TODO
-			# Fazer:
-			#   - (Lembrete: Utilizar classe GLCEditavel pra construir a GLC resultante)
-			#   - Obter quais não terminais possuem recursão à esquerda e pra cada um, se são recursões diretas ou indiretas
-			#       - Essa estrutura pode ser um dicionário, onde as chaves são os não terminais e o valor é o tipo da recursividade
-			#   - Cria uma nova GLC sem recursão à esquerda usando o algoritmo.
-			#   - Retorna a GLC e também a estrutura dos terminais que possuem recursão
-
 
 	def existe_recursao_esq(self):
 		firsts_nt = self.first_nt()
@@ -743,7 +734,7 @@ class GramaticaLivreDeContexto(Elemento):
 			nao_terminais.extend(self._nao_terminais)
 			while nao_terminais:
 				nt = nao_terminais[0]
-				if not fatorada.__nt_esta_fatorado(fatorada, nt):
+				if not fatorada._nt_esta_fatorado(fatorada, nt):
 					if i < n:
 						producoes = list(fatorada._conjunto_producoes[nt])
 						j = 0
@@ -875,7 +866,7 @@ class GramaticaLivreDeContexto(Elemento):
 			glc = fatorada.obter_glc_padrao(self.get_nome() + "(fatorada)")
 			return True, glc
 
-	def __nt_esta_fatorado(self, gramatica, nt):
+	def _nt_esta_fatorado(self, gramatica, nt):
 		firsts_das_derivacoes = set()
 		for producao in gramatica._conjunto_producoes[nt]:
 			first_producao = gramatica.first_producao(producao)
