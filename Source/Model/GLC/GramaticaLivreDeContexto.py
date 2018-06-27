@@ -194,10 +194,9 @@ class GramaticaLivreDeContexto(Elemento):
 		derivacao = producao.get_derivacao()
 		gerador = producao.get_gerador()
 
-		# TODO, analisar melhor os indexadores do pre e do pos para eles não incluirem o "posicao_do_vn"
 		derivacao_pre = derivacao[:posicao_do_vn]
 		vn = derivacao[posicao_do_vn]
-		derivacao_pos = derivacao[posicao_do_vn:]
+		derivacao_pos = derivacao[posicao_do_vn+1:]
 		producoes_geradas = []
 		for producao in self._conjunto_producoes[vn]:
 			nova_producao = Producao(gerador, derivacao_pre + producao.get_derivacao + derivacao_pos)
