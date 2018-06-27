@@ -217,7 +217,7 @@ class GramaticaLivreDeContexto(Elemento):
 		return self.__ne
 
 	def __powerset(self, lista):
-		"powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+		# powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
 		return chain.from_iterable(combinations(lista, r) for r in range(len(lista) + 1))
 
 	def remove_simples(self):
@@ -587,12 +587,167 @@ class GramaticaLivreDeContexto(Elemento):
 		return True
 
 	def eh_fatoravel_em_n_passos(self, n):
-		pass
-		# TODO
-		# Deve:
-		#   - (Lembrete: Utilizar classe GLCEditavel pra construir cada passo da GLC durante a fatoração)
-		#   - Tentar fatorar em no máximo n passos
-		#   - Só precisa retornar True ou False por enquanto
+		if self.esta_fatorada():
+			raise OperacaoError(" a gramática já está fatorada")
+		else:
+			i = 0
+			fatorada = GLCEditavel(self)
+			nao_terminais = []
+			nao_terminais.extend(self._nao_terminais)
+			while nao_terminais:
+				nt = nao_terminais[0]
+				if not fatorada.__nt_esta_fatorado(fatorada, nt):
+					if i < n:
+						producoes = list(fatorada._conjunto_producoes[nt])
+						j = 0
+						firsts = []
+						while j < len(producoes)-1:
+							k = j + 1
+							producao = producoes[j]
+							first_prod = fatorada.first_producao(producao)
+							if not(first_prod in firsts):  # Se esse first já não foi analizado
+								outras_prod = []
+								while k < len(producoes):
+									prod = producoes[k]
+									first_outra_prod = fatorada.first_producao(prod)
+									if first_outra_prod not in firsts:
+										intersec = first_prod.intersection(first_outra_prod)
+										if intersec:
+											firsts.extend(intersec)
+											outras_prod.append(prod)
+									k += 1
+								if outras_prod:
+									todas_producoes = list(set(outras_prod).union(set([producao])))
+									novas_prod = []
+									for x in todas_producoes:
+										if len(x.get_derivacao()) > 0:
+											simb = x.get_derivacao()[0]
+											novas_prod.append(x)
+											if not isinstance(simb, Vt):  # ND indireto
+												prox_deriv = []
+												prox_deriv.append(simb)
+												while prox_deriv:
+													outro_simb = prox_deriv[0]
+													derivacao = fatorada._conjunto_producoes[outro_simb]
+
+													indexes = []  # indices das produções com o nao terminal
+													for y in novas_prod:
+														if y.get_derivacao()[0] == outro_simb:
+															indexes.append(novas_prod.index(y))
+
+													for d in derivacao:
+														for index in indexes:
+															di = list(novas_prod[index].get_derivacao())
+															di.pop(0)
+															if di is None:
+																di = []
+															nova_deriv = []
+															if not d.eh_epsilon() or di == list():
+																nova_deriv = list(d.get_derivacao())
+															nova_deriv.extend(di)
+															novas_prod.append(Producao(novas_prod[index].get_gerador(), nova_deriv))
+															if isinstance(nova_deriv[0], Vn):
+																prox_deriv.append(nova_deriv[0])
+													v = 0
+													for index in indexes:
+														if index-v < 0:
+															novas_prod.pop(0)
+														else:
+															novas_prod.pop(index-v)
+														v += 1
+													prox_deriv.remove(outro_simb)
+
+									# Commom substring
+									a = 0
+									b = 1
+									commom_subtrings = set()
+									removidos = set()
+									while a < len(novas_prod):
+										sa = str(novas_prod[a])
+										b = a + 1
+										while b < len(novas_prod):
+											if a != b:
+												start = self.__common_start(sa, str(novas_prod[b]))
+												if start != '' and start != ' ':
+													strings = set(commom_subtrings)
+													if strings:
+														for c in strings:
+															com_sub = self.__common_start(c, start)
+															if com_sub != '' and com_sub != ' ':
+																commom_subtrings.add(com_sub)
+																removidos.add(c)
+															else:
+																commom_subtrings.add(start)
+													else:
+														commom_subtrings.add(start)
+											b += 1
+										a += 1
+									for r in removidos:
+										commom_subtrings.remove(r)
+
+									adicionar = list(novas_prod)
+									for common_s in commom_subtrings:
+										# Fatora
+										simbolos = []
+										common_s = common_s.replace(" ", "")
+										for s in common_s:
+											if s.islower():
+												simbolos.append(Vt(s))
+											else:
+												simbolos.append(Vn(s))
+										novo_nt = fatorada.novo_simbolo(str(nt)[0])
+										novo_nt = Vn(novo_nt)
+										simbolos.append(novo_nt)
+										nao_terminais.append(novo_nt)
+										fatorada.adiciona_nao_terminal(novo_nt)
+										fatorada.adiciona_producao(nt, Producao(nt, simbolos))
+
+										# Produções do novo não terminal
+										fim_commom = len(common_s)
+										for p in novas_prod:
+											if p.get_derivacao()[0] == simbolos[0]:
+												resto_prod = p.get_derivacao()[fim_commom:]
+												if len(resto_prod) == 0:
+													resto_prod = [Vt("&")]
+												fatorada.adiciona_producao(novo_nt, Producao(novo_nt, resto_prod))
+												adicionar.remove(p)
+
+									for a in adicionar:
+										fatorada.adiciona_producao(nt, Producao(nt, a.get_derivacao()))
+
+									# Remover producoes não fatoradas anteriores
+									for p in todas_producoes:
+										fatorada.remove_producao(nt, p)
+
+									i += 1  # Um passo feito
+							j += 1
+					else:
+						return False, None
+				nao_terminais.remove(nt)
+
+			glc = fatorada.obter_glc_padrao(self.get_nome() + "(fatorada)")
+			return True, glc
+
+	def __nt_esta_fatorado(self, gramatica, nt):
+		firsts_das_derivacoes = set()
+		for producao in gramatica._conjunto_producoes[nt]:
+			first_producao = gramatica.first_producao(producao)
+			if firsts_das_derivacoes.intersection(first_producao):
+				return False
+			else:
+				firsts_das_derivacoes = firsts_das_derivacoes.union(first_producao)
+		return True
+
+	def __common_start(self, sa, sb):
+		# returns the longest common substring from the beginning of sa and sb
+		def _iter():
+			for a, b in zip(sa, sb):
+				if a == b:
+					yield a
+				else:
+					return
+
+		return ''.join(_iter())
 
 	def to_string(self):
 		return self.__str__()
