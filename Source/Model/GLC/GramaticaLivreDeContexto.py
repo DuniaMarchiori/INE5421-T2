@@ -121,12 +121,58 @@ class GramaticaLivreDeContexto(Elemento):
 		return vt in self._terminais
 
 	def remove_recursao_esq(self):
-		if self.existe_recursao_esq():
+		if not self.existe_recursao_esq():
 			raise OperacaoError(" a gramática não possui recursão à esquerda")
 		elif not self.eh_propria():
 			raise OperacaoError(" a gramática não é própria")
 		else:
-			print()
+			recursoes_diretas = {}
+			recursoes_indiretas = {}
+
+			# Construir os conjuntos de recursões diretas e indiretas
+			for vn in self._nao_terminais:
+				for producao in self._conjunto_producoes[vn]:
+					if self._eh_recursivo_direto(vn, producao):
+						if vn not in recursoes_diretas:
+							recursoes_diretas[vn] = set()
+						recursoes_diretas[vn].add(producao)
+					if self._eh_recursivo_indireto(vn, producao):
+						if vn not in recursoes_indiretas:
+							recursoes_indiretas[vn] = set()
+						recursoes_indiretas[vn].add(producao)
+
+			epsilon_vt = Vt(epsilon)
+			glc_sem_recursao = GLCEditavel(self)
+			vns_em_ordem = list(self._conjunto_producoes)
+			for i in range(0, len(vns_em_ordem)):
+				vni = vns_em_ordem[i]
+				for j in range(0, i):
+					vnj = vns_em_ordem[j]
+
+					producoes_a_remover = []
+					producoes_novas = []
+					for producao in glc_sem_recursao._conjunto_producoes[vni]:
+						if glc_sem_recursao._eh_recursivo_indireto(vni, producao):
+							derivacao = producao.get_derivacao()
+							for k in range(0, len(derivacao)):
+								simbolo = derivacao[k]
+								if simbolo is vnj:
+									producoes_a_remover.append(producao)
+									producoes_substituidas = glc_sem_recursao._substitui_vn_por_producao(producao, k)
+									producoes_novas.extend(producoes_substituidas)
+									break
+								elif epsilon_vt not in glc_sem_recursao.first()[simbolo]:
+									break
+								elif isinstance(simbolo, Vt):
+									break
+
+					for producao in producoes_a_remover:
+						glc_sem_recursao.remove_producao(vni, producao)
+					for producao in producoes_novas:
+						glc_sem_recursao.adiciona_producao(vni, producao)
+
+				glc_sem_recursao = glc_sem_recursao._remove_recursao_direta(vni)
+
 			pass
 			# TODO
 			# Fazer:
@@ -136,11 +182,88 @@ class GramaticaLivreDeContexto(Elemento):
 			#   - Cria uma nova GLC sem recursão à esquerda usando o algoritmo.
 			#   - Retorna a GLC e também a estrutura dos terminais que possuem recursão
 
+
 	def existe_recursao_esq(self):
-		pass
-		# TODO
-		# Deve:
-		#   - Verificar se existem recursões à esquerda nessa gramática (retorna True ou False)
+		firsts_nt = self.first_nt()
+		for vn in firsts_nt:
+			if vn in firsts_nt[vn]:
+				return True
+		return False
+
+	def _substitui_vn_por_producao(self, producao, posicao_do_vn):
+		derivacao = producao.get_derivacao()
+		gerador = producao.get_gerador()
+
+		# TODO, analisar melhor os indexadores do pre e do pos para eles não incluirem o "posicao_do_vn"
+		derivacao_pre = derivacao[:posicao_do_vn]
+		vn = derivacao[posicao_do_vn]
+		derivacao_pos = derivacao[posicao_do_vn:]
+		producoes_geradas = []
+		for producao in self._conjunto_producoes[vn]:
+			nova_producao = Producao(gerador, derivacao_pre + producao.get_derivacao + derivacao_pos)
+			producoes_geradas.append(nova_producao)
+
+		return producoes_geradas
+
+	def _remove_recursao_direta(self, vn):
+		sem_recursao_direta = GLCEditavel(self)
+		producoes_com_recursao = []
+		producoes_sem_recursao = []
+		for producao in sem_recursao_direta._conjunto_producoes:
+			derivacao = producao.get_derivacao()
+			for simbolo in derivacao:
+				if isinstance(simbolo, Vt):
+					producoes_sem_recursao.append(producao)
+					break
+				else:
+					if simbolo is vn:
+						producoes_com_recursao.append(producao)
+						break
+					elif Vt(epsilon) not in sem_recursao_direta.first()[simbolo]:
+						producoes_sem_recursao.append(producao)
+						break
+
+		sem_recursao_direta._conjunto_producoes[vn].clear()
+		novo_vn = Vn(sem_recursao_direta.novo_simbolo(vn.get_simbolos()[0]))
+		for producao in producoes_com_recursao:
+			nova_derivacao = producao.get_derivacao()[1:] + [novo_vn]
+			nova_producao = Producao(novo_vn, nova_derivacao)
+			sem_recursao_direta.adiciona_producao(novo_vn, nova_producao)
+		sem_recursao_direta.adiciona_producao(novo_vn, Vt(epsilon))
+
+		for producao in producoes_sem_recursao:
+			nova_derivacao = producao.get_derivacao() + [novo_vn]
+			nova_producao = Producao(novo_vn, nova_derivacao)
+			sem_recursao_direta.adiciona_producao(vn, nova_producao)
+
+		return sem_recursao_direta
+
+	def _eh_recursivo_direto(self, vn, producao):
+		first = self.first()
+		epsilon_vt = Vt(epsilon)
+		derivacao = producao.get_derivacao()
+		for simbolo in derivacao:
+			if isinstance(simbolo, Vt):
+				return False
+			else:
+				if simbolo is vn:
+					return True
+				elif epsilon_vt not in first[simbolo]:
+					return False
+		return False
+
+	def _eh_recursivo_indireto(self, vn, producao):
+		first_nt = self.first_nt()
+		epsilon_vt = Vt(epsilon)
+		derivacao = producao.get_derivacao()
+		for simbolo in derivacao:
+			if isinstance(simbolo, Vt):
+				return False
+			else:
+				if vn is not vn and vn in first_nt[vn]:
+					return True
+		return False
+
 
 	def transforma_epsilon_livre(self):
 		if self.eh_epsilon_livre():
