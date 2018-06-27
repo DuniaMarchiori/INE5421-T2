@@ -61,7 +61,7 @@ class GLCEditavel(GramaticaLivreDeContexto):
 		self._clear()
 
 	def adiciona_producao(self, gerador, producao):
-		if not isinstance(producao, Producao) or not self.vn_pertence(gerador) or gerador != producao.get_gerador():
+		if not isinstance(producao, Producao) or gerador != producao.get_gerador():
 			raise Exception("Erro Interno")
 
 		if not self.vn_pertence(gerador):
