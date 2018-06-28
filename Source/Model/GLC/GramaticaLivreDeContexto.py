@@ -734,131 +734,105 @@ class GramaticaLivreDeContexto(Elemento):
 			nao_terminais.extend(self._nao_terminais)
 			while nao_terminais:
 				nt = nao_terminais[0]
-				if not fatorada._nt_esta_fatorado(fatorada, nt):
+				esta_fatorado, duplicacoes = fatorada._nt_esta_fatorado(fatorada, nt)
+				if not esta_fatorado:
 					if i < n:
-						producoes = list(fatorada._conjunto_producoes[nt])
-						j = 0
-						firsts = []
-						while j < len(producoes)-1:
-							k = j + 1
-							producao = producoes[j]
-							first_prod = fatorada.first_producao(producao)
-							if not(first_prod in firsts):  # Se esse first já não foi analizado
-								outras_prod = []
-								while k < len(producoes):
-									prod = producoes[k]
-									first_outra_prod = fatorada.first_producao(prod)
-									if first_outra_prod not in firsts:
-										intersec = first_prod.intersection(first_outra_prod)
-										if intersec:
-											firsts.extend(intersec)
-											outras_prod.append(prod)
-									k += 1
-								if outras_prod:
-									todas_producoes = list(set(outras_prod).union(set([producao])))
-									novas_prod = []
-									for x in todas_producoes:
-										if len(x.get_derivacao()) > 0:
-											simb = x.get_derivacao()[0]
-											novas_prod.append(x)
-											if not isinstance(simb, Vt):  # ND indireto
-												prox_deriv = []
-												prox_deriv.append(simb)
-												while prox_deriv:
-													outro_simb = prox_deriv[0]
-													derivacao = fatorada._conjunto_producoes[outro_simb]
+						# Identifico as produções que contém os símbolos que geram a não fatoração
+						producoes_nao_fatoradas = []
+						producoes_originais = fatorada._conjunto_producoes[nt]
+						for prod in producoes_originais:
+							if any(simbolo in fatorada.first_producao(prod) for simbolo in duplicacoes):
+								producoes_nao_fatoradas.append(prod)
 
-													indexes = []  # indices das produções com o nao terminal
-													for y in novas_prod:
-														if y.get_derivacao()[0] == outro_simb:
-															indexes.append(novas_prod.index(y))
+						# Derivações
+						simbolos_derivacao = []
+						producoes_derivadas = list(producoes_originais)
+						for prod in producoes_nao_fatoradas:
+							simbolo = prod.get_derivacao()[0]
+							if str(simbolo)[0] in alfabeto_nao_terminais_inicial: # Inicia a produção com NT
+
+								# Só deriva se a não fatoração for de dois não terminais diferentes
+								index_prod = producoes_nao_fatoradas.index(prod)
+								for a in range(0, len(producoes_nao_fatoradas)):
+									if a != index_prod:
+										if fatorada.first_producao(prod).intersection(fatorada.first_producao(producoes_nao_fatoradas[a])):
+											if str(simbolo) != str(producoes_nao_fatoradas[a].get_derivacao()[0]):
+
+												simbolos_derivacao.append(simbolo)
+												while simbolos_derivacao:
+													simbolo_derivado = simbolos_derivacao[0]
+													derivacao = fatorada._conjunto_producoes[simbolo_derivado]
+
+													indexes = []  # Índices das produções com o não terminal
+													for y in producoes_derivadas:
+														if y.get_derivacao()[0] == simbolo_derivado:
+															indexes.append(producoes_derivadas.index(y))
 
 													for d in derivacao:
 														for index in indexes:
-															di = list(novas_prod[index].get_derivacao())
-															di.pop(0)
+															di = list(producoes_derivadas[index].get_derivacao())
+															di.pop(0) # Retira o não terminal inicial
 															if di is None:
 																di = []
 															nova_deriv = []
 															if not d.eh_epsilon() or di == list():
 																nova_deriv = list(d.get_derivacao())
-															nova_deriv.extend(di)
-															novas_prod.append(Producao(novas_prod[index].get_gerador(), nova_deriv))
-															if isinstance(nova_deriv[0], Vn):
-																prox_deriv.append(nova_deriv[0])
+															nova_deriv.extend(di) # Subtitui o não terminal por sua derivação
+															producoes_derivadas.append(Producao(producoes_derivadas[index].get_gerador(), nova_deriv))
+															if str(nova_deriv[0]) in alfabeto_nao_terminais_inicial:
+																simbolos_derivacao.append(nova_deriv[0])
 													v = 0
-													for index in indexes:
-														if index-v < 0:
-															novas_prod.pop(0)
+													for index in indexes: # Remove as produções que foram derivadas
+														if index - v < 0:
+															producoes_derivadas.pop(0)
 														else:
-															novas_prod.pop(index-v)
+															producoes_derivadas.pop(index - v)
 														v += 1
-													prox_deriv.remove(outro_simb)
+													simbolos_derivacao.remove(simbolo_derivado)
 
-									# Commom substring
-									a = 0
-									b = 1
-									commom_subtrings = set()
-									removidos = set()
-									while a < len(novas_prod):
-										sa = str(novas_prod[a])
-										b = a + 1
-										while b < len(novas_prod):
-											if a != b:
-												start = self.__common_start(sa, str(novas_prod[b]))
-												if start != '' and start != ' ':
-													strings = set(commom_subtrings)
-													if strings:
-														for c in strings:
-															com_sub = self.__common_start(c, start)
-															if com_sub != '' and com_sub != ' ':
-																commom_subtrings.add(com_sub)
-																removidos.add(c)
-															else:
-																commom_subtrings.add(start)
-													else:
-														commom_subtrings.add(start)
-											b += 1
-										a += 1
-									for r in removidos:
-										commom_subtrings.remove(r)
+						#Fatoração
 
-									adicionar = list(novas_prod)
-									for common_s in commom_subtrings:
-										# Fatora
-										simbolos = []
-										common_s = common_s.replace(" ", "")
-										for s in common_s:
-											if s.islower():
-												simbolos.append(Vt(s))
-											else:
-												simbolos.append(Vn(s))
-										novo_nt = fatorada.novo_simbolo(str(nt)[0])
-										novo_nt = Vn(novo_nt)
-										simbolos.append(novo_nt)
-										nao_terminais.append(novo_nt)
-										fatorada.adiciona_nao_terminal(novo_nt)
-										fatorada.adiciona_producao(nt, Producao(nt, simbolos))
+						# Identifica quais as maiores substrings em comum entre as produções
+						# Por. ex.: 1. S -> a B c | a B x  -  identifico "a B"
+						# 2. S -> a B c | a B x | a c  - identifico "a "
+						common_substrings = self.__identifica_inicio_comum(producoes_derivadas)
 
-										# Produções do novo não terminal
-										fim_commom = len(common_s)
-										for p in novas_prod:
-											if p.get_derivacao()[0] == simbolos[0]:
-												resto_prod = p.get_derivacao()[fim_commom:]
-												if len(resto_prod) == 0:
-													resto_prod = [Vt("&")]
-												fatorada.adiciona_producao(novo_nt, Producao(novo_nt, resto_prod))
-												adicionar.remove(p)
+						adicionar = list(producoes_derivadas)
+						for common_s in common_substrings:
+							# Fatora
+							simbolos = []
+							common_s = common_s.split(" ")
+							for s in common_s:
+								if s != "":
+									if s[0] in alfabeto_nao_terminais_inicial:
+										simbolos.append(Vn(s))
+									else:
+										simbolos.append(Vt(s))
+							novo_nt = fatorada.novo_simbolo(str(nt)[0])
+							novo_nt = Vn(novo_nt)
+							tamanho_string_comum = len(simbolos)
+							simbolos.append(novo_nt)
+							nao_terminais.append(novo_nt)
+							fatorada.adiciona_nao_terminal(novo_nt)
+							fatorada.adiciona_producao(nt, Producao(nt, simbolos))
 
-									for a in adicionar:
-										fatorada.adiciona_producao(nt, Producao(nt, a.get_derivacao()))
+							# Produções do novo não terminal
+							for p in producoes_derivadas:
+								if p.get_derivacao()[0] == simbolos[0]:
+									resto_prod = p.get_derivacao()[tamanho_string_comum:]
+									if len(resto_prod) == 0:
+										resto_prod = [Vt(epsilon)]
+									fatorada.adiciona_producao(novo_nt, Producao(novo_nt, resto_prod))
+									adicionar.remove(p)
 
-									# Remover producoes não fatoradas anteriores
-									for p in todas_producoes:
-										fatorada.remove_producao(nt, p)
+						for a in adicionar:
+							fatorada.adiciona_producao(nt, Producao(nt, a.get_derivacao()))
 
-									i += 1  # Um passo feito
-							j += 1
+						# Remover producoes não fatoradas anteriores
+						for p in producoes_nao_fatoradas:
+							fatorada.remove_producao(nt, p)
+
+						i += 1  # Um passo feito. A cada passo se fatora um Vn
 					else:
 						return False, None
 				nao_terminais.remove(nt)
@@ -867,14 +841,19 @@ class GramaticaLivreDeContexto(Elemento):
 			return True, glc
 
 	def _nt_esta_fatorado(self, gramatica, nt):
+		duplicacoes = set()
 		firsts_das_derivacoes = set()
 		for producao in gramatica._conjunto_producoes[nt]:
 			first_producao = gramatica.first_producao(producao)
-			if firsts_das_derivacoes.intersection(first_producao):
-				return False
+			intersec = firsts_das_derivacoes.intersection(first_producao)
+			if intersec:
+				duplicacoes = duplicacoes.union(intersec)
 			else:
 				firsts_das_derivacoes = firsts_das_derivacoes.union(first_producao)
-		return True
+		if duplicacoes:
+			return False, duplicacoes
+		else:
+			return True, None
 
 	def __common_start(self, sa, sb):
 		# returns the longest common substring from the beginning of sa and sb
@@ -886,6 +865,31 @@ class GramaticaLivreDeContexto(Elemento):
 					return
 
 		return ''.join(_iter())
+
+	def __identifica_inicio_comum(self, producoes):
+
+		comum = dict() # Dicionário onde a chave é o primeiro simbolo da produção
+		for p in producoes:
+			simbolo = p.get_derivacao()[0]
+			comum.setdefault(simbolo, [])
+			comum[simbolo].append(p)
+
+		# Entre as produções que possuem o mesmo primeiro simbolo indentifico qual a maior substring em comum entre eles
+		common_substrings = set()
+		for simbolo_inicial in comum:
+			subconjunto = comum[simbolo_inicial]
+			if len(subconjunto) > 1:  # Se existe mais que uma produção que iniciam iguais
+				menor = str(subconjunto[0])
+				a = 1
+				while a < len(subconjunto):
+					start = self.__common_start(menor, str(subconjunto[a]))
+					if len(start) < len(menor):
+						menor = start
+					a += 1
+				common_substrings.add(menor)
+
+		return common_substrings
+
 
 	def to_string(self):
 		return self.__str__()
