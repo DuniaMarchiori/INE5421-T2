@@ -280,10 +280,15 @@ class GramaticaLivreDeContexto(Elemento):
 							powerset.pop(0)  # Remove conjunto vazio
 							for item in powerset:
 								nova_prod = list(prod)
-								index = ''.join(str(s) for s in list(item))
-								index = int(index)
+								posicao_1 = item[0]
+								index = int(posicao_1)
 								nova_prod.pop(index)
-								sem_epsilon.adiciona_producao(A, Producao(A, nova_prod))
+								if len(item) > 1:
+									posicao_2 = item[1]
+									index = int(posicao_2)
+									nova_prod.pop(index-1)
+								if len(nova_prod) > 0:
+									sem_epsilon.adiciona_producao(A, Producao(A, nova_prod))
 
 		if self._vn_inicial in ne:
 			novo_inicial = Vn(sem_epsilon.novo_simbolo(self._vn_inicial.get_simbolos()[0]))
