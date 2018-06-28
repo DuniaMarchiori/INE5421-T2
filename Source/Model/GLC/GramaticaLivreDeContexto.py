@@ -540,7 +540,7 @@ class GramaticaLivreDeContexto(Elemento):
 		elif self.__infinita():
 			return 2
 		else:
-			return  1
+			return 1
 
 	def __infinita(self):
 		simbolos_uteis = self.obtem_nf().intersection(self.obtem_vi())
