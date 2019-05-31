@@ -32,7 +32,8 @@ class GLCEditavel(GramaticaLivreDeContexto):
 		if not isinstance(novo_inicial, Vn) or not self.vn_pertence(novo_inicial):
 			raise Exception("Erro Interno")
 
-		self.__vn_inicial = novo_inicial
+		self._vn_inicial = novo_inicial
+		self._conjunto_producoes.move_to_end(novo_inicial, last=False)
 		self._clear()
 
 	def adiciona_nao_terminal(self, nt):
@@ -61,7 +62,7 @@ class GLCEditavel(GramaticaLivreDeContexto):
 		self._clear()
 
 	def adiciona_producao(self, gerador, producao):
-		if not isinstance(producao, Producao) or not self.vn_pertence(gerador) or gerador != producao.get_gerador():
+		if not isinstance(producao, Producao) or gerador != producao.get_gerador():
 			raise Exception("Erro Interno")
 
 		if not self.vn_pertence(gerador):

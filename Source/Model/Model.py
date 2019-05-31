@@ -73,7 +73,7 @@ class Model:
     '''
     def remover_recursao(self, gramatica):
         if not gramatica.existe_recursao_esq():
-            raise OperacaoError(" a gramática não possui nenhuma recursão à esquerda")
+            raise OperacaoError("a gramática não possui nenhuma recursão à esquerda")
         else:
             resultantes = []
 
@@ -83,10 +83,10 @@ class Model:
             except OperacaoError as e:
                 propria = [gramatica]
 
-            sem_recursao, recursoes = propria[-1].remove_recursao_esq()
+            sem_recursao, recursoes_diretas, recursoes_indiretas = propria[-1].remove_recursao_esq()
             resultantes.append(sem_recursao)
 
-            return resultantes, recursoes
+            return resultantes, recursoes_diretas, recursoes_indiretas
 
     '''
         Método que transforma uma gramática em própria

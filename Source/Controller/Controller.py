@@ -33,6 +33,15 @@ class Controller:
 		self.__model.adicionar_elemento_na_lista(elemento)
 		self.__view.adicionar_elemento_na_lista(elemento.get_nome(), elemento.get_tipo())
 
+	def __representacao_textual_de_conjunto(self, nome_conjunto, conjunto):
+		representacao = nome_conjunto + " = {"
+		for simbolo in conjunto:
+			representacao += str(simbolo) + ", "
+		if conjunto:
+			representacao = representacao[:-2]
+		representacao += "}"
+		return representacao
+
 	# Callbacks da interface
 
 	'''
@@ -99,8 +108,17 @@ class Controller:
 	def cb_operacao_remover_recursao_esq(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar as recursoes
-			glcs_criadas, recursoes = self.__model.remover_recursao(elemento)
+			glcs_criadas, recursoes_diretas, recursoes_indiretas = self.__model.remover_recursao(elemento)
+			mensagem = "As recursões diretas são:\n"
+			for simbolo in recursoes_diretas:
+				for producao in recursoes_diretas[simbolo]:
+					mensagem += str(simbolo) + " ->" + str(producao) + "\n"
+			mensagem += "\nAs recursões indiretas são:\n"
+			for simbolo in recursoes_indiretas:
+				for producao in recursoes_indiretas[simbolo]:
+					mensagem += str(simbolo) + " ->" + str(producao) + "\n"
+
+			self.__view.mostrar_aviso(mensagem, titulo="Recursões")
 			self.__adicionar_multiplos_elementos(glcs_criadas)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -114,8 +132,19 @@ class Controller:
 	def cb_operacao_propria(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar os conjuntos (ne, na, nf e vi)
 			glcs_criadas, conjuntos = self.__model.transformar_em_propria(elemento)
+			ne = conjuntos[0]
+			na = conjuntos[1]
+			nf = conjuntos[2]
+			vi = conjuntos[3]
+			mensagem = "O conjunto Ne dessa gramática é:\n" + self.__representacao_textual_de_conjunto("Ne", ne)
+			mensagem += "\n\nOs conjuntos NA da gramática &-livre são:\n"
+			for simbolo in na:
+				mensagem += "N" + self.__representacao_textual_de_conjunto(simbolo.get_simbolos(), na[simbolo]) + "\n"
+			mensagem += "\nO conjunto NF da gramática com as produções simples removidas é:\n" + self.__representacao_textual_de_conjunto("NF", nf)
+			mensagem += "\n\nO conjunto Vi da gramática com os inférteis removidos é:\n" + self.__representacao_textual_de_conjunto("Vi", vi)
+
+			self.__view.mostrar_aviso(mensagem, titulo="Conjuntos Ne, NA, NF e Vi")
 			self.__adicionar_multiplos_elementos(glcs_criadas)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -129,8 +158,9 @@ class Controller:
 	def cb_operacao_epsilon(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar o conjunto (ne)
 			glc_criada, ne = self.__model.transformar_epsilon_livre(elemento)
+			ne_string = "O conjunto Ne dessa gramática é:\n" + self.__representacao_textual_de_conjunto("Ne", ne)
+			self.__view.mostrar_aviso(ne_string, titulo="Conjunto Ne")
 			self.__adicionar_unico_elemento(glc_criada)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -144,8 +174,11 @@ class Controller:
 	def cb_operacao_simples(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar o conjunto (na)
 			glc_criada, na = self.__model.remover_simples(elemento)
+			mensagem = "Os conjuntos NA dessa gramática são:\n"
+			for simbolo in na:
+				mensagem += self.__representacao_textual_de_conjunto(simbolo.get_simbolos(), na[simbolo]) + "\n"
+			self.__view.mostrar_aviso(mensagem, titulo="Conjuntos NA")
 			self.__adicionar_unico_elemento(glc_criada)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -159,8 +192,12 @@ class Controller:
 	def cb_operacao_inuteis(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar os conjuntos (nf e vi)
 			glcs_criadas, conjuntos = self.__model.remover_inuteis(elemento)
+			vi = conjuntos[0]
+			nf = conjuntos[1]
+			mensagem = "O conjunto Vi dessa gramática é:\n" + self.__representacao_textual_de_conjunto("Vi", vi)
+			mensagem += "\n\nO conjunto NF da gramática com os inférteis removidos é:\n" + self.__representacao_textual_de_conjunto("NF", nf)
+			self.__view.mostrar_aviso(mensagem, titulo="Conjuntos Vi e NF")
 			self.__adicionar_multiplos_elementos(glcs_criadas)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -174,8 +211,9 @@ class Controller:
 	def cb_operacao_inferteis(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar o conjunto (nf)
 			glc_criada, nf = self.__model.remover_inferteis(elemento)
+			nf_string = "O conjunto NF dessa gramática é:\n" + self.__representacao_textual_de_conjunto("NF", nf)
+			self.__view.mostrar_aviso(nf_string, titulo="Conjunto NF")
 			self.__adicionar_unico_elemento(glc_criada)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -189,8 +227,9 @@ class Controller:
 	def cb_operacao_inalcancaveis(self, indice):
 		elemento = self.__model.obter_elemento_por_indice(indice)
 		try:
-			# TODO ver como vai mostrar o conjunto (vi)
 			glc_criada, vi = self.__model.remover_inalcancaveis(elemento)
+			vi_string = "O conjunto Vi dessa gramática é:\n" + self.__representacao_textual_de_conjunto("Vi", vi)
+			self.__view.mostrar_aviso(vi_string, titulo="Conjunto Vi")
 			self.__adicionar_unico_elemento(glc_criada)
 		except OperacaoError as e:
 			self.__view.mostrar_aviso(e.get_message())
@@ -284,5 +323,7 @@ class Controller:
 				self.__view.mostrar_aviso("Esta GLC não é fatorável em " + str(n) + " passos.", titulo="Fatorável")
 		except ValueError:
 			self.__view.mostrar_aviso("N deve ser um número inteiro.")
+		except OperacaoError as e:
+			self.__view.mostrar_aviso(e.get_message())
 		except:
 			self.__view.mostrar_aviso("Erro ao verificar a propriedade.")
